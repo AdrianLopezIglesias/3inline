@@ -10,7 +10,7 @@
 html, body { height: 100%; margin: 0; }
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: linear-gradient(180deg, #16203a, var(--bg) 55%, #05070d);
+  background: #000;
   color: var(--ink);
   touch-action: manipulation;
   user-select: none;
