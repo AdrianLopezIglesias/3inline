@@ -56,6 +56,24 @@
       showFlash(val);
     } else if (type === "hint") {
       el.hint.textContent = val;
+    } else if (type === "clears") {
+      var g = window.Game.geom;
+      var n = val.length;
+      for (var i = 0; i < n; i++) {
+        var c = val[i];
+        var cx = g.left + c.col * g.cell + g.cell / 2;
+        var cy = g.top + c.row * g.cell + g.cell / 2;
+        if (window.PixelFX) window.PixelFX[n >= 5 ? "specialClear" : "clearBurst"](cx, cy, c.type % 7);
+      }
+    } else if (type === "cascade") {
+      var gc = window.Game.geom;
+      var grid = window.Game.grid;
+      if (window.PixelFX && grid) {
+        window.PixelFX.cascadeFlash(
+          gc.left + gc.cell * grid[0].length / 2,
+          gc.top + gc.cell * grid.length / 2
+        );
+      }
     } else if (type === "end") {
       if (val.won) {
         el.ovTitle.textContent = TEXT.winTitle;
