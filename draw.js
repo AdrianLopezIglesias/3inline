@@ -105,12 +105,12 @@
     ctx.arc(cx, cy, half, 0, Math.PI * 2);
     var body = BG[type];
     var orb = ctx.createRadialGradient(
-      cx - half * 0.34, cy - half * 0.38, half * 0.06,
-      cx - half * 0.08, cy - half * 0.04, half * 1.12);
-    orb.addColorStop(0, shade(body, 0.42));
-    orb.addColorStop(0.42, shade(body, 0.10));
-    orb.addColorStop(0.78, body);
-    orb.addColorStop(1, shade(body, -0.46));
+      cx - half * 0.14, cy - half * 0.48, half * 0.12,
+      cx, cy + half * 0.12, half * 1.30);
+    orb.addColorStop(0, shade(body, 0.15));
+    orb.addColorStop(0.45, shade(body, 0.04));
+    orb.addColorStop(0.82, shade(body, -0.07));
+    orb.addColorStop(1, shade(body, -0.26));
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,.50)";
     ctx.shadowBlur = cell * 0.14;
@@ -123,17 +123,16 @@
     ctx.lineWidth = Math.max(1, cell * 0.028);
     ctx.strokeStyle = EDGE;
     ctx.stroke();
+    var sheen = ctx.createLinearGradient(0, cy - half, 0, cy + half * 0.15);
+    sheen.addColorStop(0, "rgba(255,255,255,.18)");
+    sheen.addColorStop(1, "rgba(255,255,255,0)");
     ctx.save();
     ctx.beginPath();
-    ctx.ellipse(cx - half * 0.30, cy - half * 0.40, half * 0.34, half * 0.22, -0.55, 0, Math.PI * 2);
-    var spec = ctx.createRadialGradient(
-      cx - half * 0.30, cy - half * 0.40, 0,
-      cx - half * 0.30, cy - half * 0.40, half * 0.40);
-    spec.addColorStop(0, "rgba(255,255,255,.78)");
-    spec.addColorStop(0.55, "rgba(255,255,255,.22)");
-    spec.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = spec;
-    ctx.fill();
+    ctx.arc(cx, cy - half * 0.02, half * 0.93, Math.PI * 1.14, Math.PI * 1.86);
+    ctx.lineWidth = Math.max(1, cell * 0.045);
+    ctx.lineCap = "round";
+    ctx.strokeStyle = sheen;
+    ctx.stroke();
     ctx.restore();
     symbolPath(ctx, symbol < 0 ? type : symbol, cx, cy + cell * 0.01, s * 0.27);
     ctx.save();
