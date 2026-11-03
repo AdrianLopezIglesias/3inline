@@ -29,7 +29,19 @@ http
     res.writeHead(200, { "Content-Type": types[ext] || "application/octet-stream" });
     fs.createReadStream(file).pipe(res);
   })
-  .listen(45663, "127.0.0.1", function () {
+  .listen(0, "0.0.0.0", function () {
     const { port } = this.address();
-    console.log(`Farm 3 serving at http://localhost:${port}`);
+    const os = require("os");
+    const ifaces = os.networkInterfaces();
+    let lan = "0.0.0.0";
+    for (const dev in ifaces) {
+      for (const info of ifaces[dev]) {
+        if (info.family === "IPv4" && !info.internal) {
+          lan = info.address;
+          break;
+        }
+      }
+      if (lan !== "0.0.0.0") break;
+    }
+    console.log(`Farm 3 serving at http://localhost:${port} (LAN: http://${lan}:${port})`);
   });
