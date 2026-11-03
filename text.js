@@ -6,7 +6,7 @@ var TEXT = {
   goal: "Goal",
   pts: "pts",
   level: "Level",
-  hint: "Tap a crop, then tap a neighbour to swap.",
+  hint: "Tap a symbol, then tap a neighbour to swap.",
   shuffleHint: "No moves left. Board reshuffled.",
   blocked: "Rocks can't be moved.",
   cascade: function (n) { return "Cascade \u00d7" + n; },

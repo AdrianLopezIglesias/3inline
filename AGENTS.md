@@ -52,4 +52,4 @@ collapse/refill ordering.
 
 - Update then draw; draw never mutates state. Motion is per-second times dt.
 - String text lives only in `text.js`; components read by key.
-- Emoji render the produce; a colored rounded tile backs each one.
+- Vector symbols are drawn per type in `draw.js`; a saturated, gradient-shaded tile backs each one.

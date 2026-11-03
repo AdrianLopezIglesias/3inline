@@ -1,8 +1,8 @@
 "use strict";
 (function () {
-  var CROP = ["\uD83E\uDD55", "\uD83C\uDF3D", "\uD83C\uDF3E", "\uD83C\uDF4E", "\uD83C\uDF47", "\uD83C\uDF83", "\uD83C\uDF45"];
-  var BG = ["#dd6b5c", "#74b257", "#f7dc78", "#ffffff", "#9a7ad8", "#2f2f38", "#5b93d6"];
-  var EDGE = "rgba(120,85,40,.18)";
+  var BG = ["#d4361f", "#148f3f", "#e0a412", "#c81e5a", "#6a2fc9", "#3f4756", "#1a6fd4"];
+  var INK = "#fff6e6";
+  var EDGE = "rgba(8,10,16,.55)";
 
   function rr(ctx, x, y, w, h, r) {
     ctx.beginPath();
@@ -14,41 +14,133 @@
     ctx.closePath();
   }
 
+  function shade(color, amt) {
+    var v = parseInt(color.slice(1), 16);
+    var ch = [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+    var out = [];
+    for (var i = 0; i < 3; i++) {
+      out.push(Math.round(amt > 0 ? ch[i] + (255 - ch[i]) * amt : ch[i] * (1 + amt)));
+    }
+    return "rgb(" + out[0] + "," + out[1] + "," + out[2] + ")";
+  }
+
+  function polygon(ctx, cx, cy, r, sides, rot) {
+    for (var i = 0; i < sides; i++) {
+      var a = rot + i * Math.PI * 2 / sides;
+      if (i) ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+      else ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+    }
+    ctx.closePath();
+  }
+
+  function symbolPath(ctx, type, cx, cy, r) {
+    var w = r * 0.36, i, a, rad;
+    ctx.beginPath();
+    if (type === 0) {
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.arc(cx, cy, r * 0.52, 0, Math.PI * 2, true);
+    } else if (type === 1) {
+      polygon(ctx, cx, cy + r * 0.10, r * 1.05, 3, -Math.PI / 2);
+    } else if (type === 2) {
+      ctx.moveTo(cx, cy - r);
+      ctx.lineTo(cx + r * 0.76, cy);
+      ctx.lineTo(cx, cy + r);
+      ctx.lineTo(cx - r * 0.76, cy);
+      ctx.closePath();
+    } else if (type === 3) {
+      for (i = 0; i < 10; i++) {
+        a = -Math.PI / 2 + i * Math.PI / 5;
+        rad = i % 2 ? r * 0.45 : r;
+        if (i) ctx.lineTo(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad);
+        else ctx.moveTo(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad);
+      }
+      ctx.closePath();
+    } else if (type === 4) {
+      polygon(ctx, cx, cy, r, 6, -Math.PI / 2);
+    } else if (type === 5) {
+      ctx.moveTo(cx - w, cy - r); ctx.lineTo(cx + w, cy - r);
+      ctx.lineTo(cx + w, cy - w); ctx.lineTo(cx + r, cy - w);
+      ctx.lineTo(cx + r, cy + w); ctx.lineTo(cx + w, cy + w);
+      ctx.lineTo(cx + w, cy + r); ctx.lineTo(cx - w, cy + r);
+      ctx.lineTo(cx - w, cy + w); ctx.lineTo(cx - r, cy + w);
+      ctx.lineTo(cx - r, cy - w); ctx.lineTo(cx - w, cy - w);
+      ctx.closePath();
+    } else {
+      ctx.moveTo(cx, cy - r * 1.05);
+      ctx.bezierCurveTo(cx + r * 0.95, cy - r * 0.05, cx + r * 0.85, cy + r * 0.85, cx, cy + r * 0.90);
+      ctx.bezierCurveTo(cx - r * 0.85, cy + r * 0.85, cx - r * 0.95, cy - r * 0.05, cx, cy - r * 1.05);
+      ctx.closePath();
+    }
+    return ctx;
+  }
+
   function drawTile(ctx, value, x, y, cell, scale, alpha) {
     var G = window.Game;
     if (G.isRock(value)) { drawRock(ctx, x, y, cell, scale, alpha); return; }
     var special = G.isSpecial(value);
     var type = G.typeOf(value);
-    var pad = cell * 0.06;
+    var pad = cell * 0.055;
     var s = cell * (scale == null ? 1 : scale);
     var cx = x + cell / 2, cy = y + cell / 2;
+    var half = s / 2 - pad;
     ctx.globalAlpha = (alpha == null ? 1 : alpha);
     if (special) {
+      var glow = ctx.createRadialGradient(cx, cy, s * 0.08, cx, cy, s * 0.55);
+      glow.addColorStop(0, "rgba(255,242,180,.80)");
+      glow.addColorStop(1, "rgba(255,190,80,0)");
       ctx.beginPath();
-      ctx.arc(cx, cy, s * 0.47, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,226,120,.55)";
+      ctx.arc(cx, cy, s * 0.55, 0, Math.PI * 2);
+      ctx.fillStyle = glow;
       ctx.fill();
     }
-    rr(ctx, cx - s / 2 + pad, cy - s / 2 + pad, s - pad * 2, s - pad * 2, cell * 0.16);
-    ctx.fillStyle = BG[type];
+    rr(ctx, cx - half, cy - half, half * 2, half * 2, cell * 0.20);
+    var body = ctx.createLinearGradient(0, cy - half, 0, cy + half);
+    body.addColorStop(0, shade(BG[type], 0.30));
+    body.addColorStop(0.52, BG[type]);
+    body.addColorStop(1, shade(BG[type], -0.34));
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,.50)";
+    ctx.shadowBlur = cell * 0.14;
+    ctx.shadowOffsetY = cell * 0.05;
+    ctx.fillStyle = body;
     ctx.fill();
-    ctx.lineWidth = Math.max(1, cell * 0.02);
+    ctx.restore();
+    rr(ctx, cx - half, cy - half, half * 2, half * 2, cell * 0.20);
+    ctx.lineWidth = Math.max(1, cell * 0.028);
     ctx.strokeStyle = EDGE;
     ctx.stroke();
-    ctx.font = (s * 0.58) + 'px system-ui, "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(CROP[type], cx, cy + cell * 0.03);
+    rr(ctx, cx - half, cy - half, half * 2, half * 0.52, cell * 0.20);
+    var sheen = ctx.createLinearGradient(0, cy - half, 0, cy - half + half * 0.52);
+    sheen.addColorStop(0, "rgba(255,255,255,.30)");
+    sheen.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = sheen;
+    ctx.fill();
+    symbolPath(ctx, type, cx, cy + cell * 0.01, s * 0.27);
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,.45)";
+    ctx.shadowBlur = cell * 0.07;
+    ctx.fillStyle = INK;
+    ctx.fill();
+    ctx.restore();
+    ctx.lineWidth = Math.max(1, cell * 0.015);
+    ctx.strokeStyle = "rgba(10,8,18,.40)";
+    ctx.stroke();
     if (special) {
       var power = G.powerOf(value);
       ctx.beginPath();
-      ctx.arc(cx, cy, s * 0.40, 0, Math.PI * 2);
-      ctx.lineWidth = Math.max(2, cell * 0.045);
-      ctx.strokeStyle = "rgba(255,255,255,.92)";
+      ctx.arc(cx, cy, s * 0.44, 0, Math.PI * 2);
+      ctx.lineWidth = Math.max(2, cell * 0.05);
+      ctx.strokeStyle = "rgba(255,250,225,.95)";
       ctx.stroke();
-      ctx.font = (s * 0.30) + "px system-ui, sans-serif";
-      ctx.fillStyle = "#3b2a12";
-      ctx.fillText(power === 1 ? "\u2194" : power === 2 ? "\u2195" : "\u2736", cx, cy - s * 0.30);
+      ctx.beginPath();
+      ctx.arc(cx, cy - s * 0.30, s * 0.17, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,250,225,.95)";
+      ctx.fill();
+      ctx.font = "700 " + (s * 0.22) + "px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#161021";
+      ctx.fillText(power === 1 ? "\u2194" : power === 2 ? "\u2195" : "\u2736", cx, cy - s * 0.29);
     }
     ctx.globalAlpha = 1;
   }
@@ -59,17 +151,22 @@
     var cx = x + cell / 2, cy = y + cell / 2;
     ctx.globalAlpha = (alpha == null ? 1 : alpha);
     rr(ctx, cx - s / 2 + pad, cy - s / 2 + pad, s - pad * 2, s - pad * 2, cell * 0.14);
-    ctx.fillStyle = "#8d887c";
+    var stone = ctx.createLinearGradient(0, cy - s / 2, 0, cy + s / 2);
+    stone.addColorStop(0, "#4b5365");
+    stone.addColorStop(0.55, "#333a49");
+    stone.addColorStop(1, "#1c202b");
+    ctx.fillStyle = stone;
     ctx.fill();
     ctx.lineWidth = Math.max(1, cell * 0.025);
-    ctx.strokeStyle = "rgba(55,50,42,.55)";
+    ctx.strokeStyle = "rgba(8,10,16,.75)";
     ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(cx - s * 0.20, cy + s * 0.16);
     ctx.lineTo(cx - s * 0.02, cy - s * 0.04);
     ctx.lineTo(cx + s * 0.18, cy + s * 0.20);
+    ctx.strokeStyle = "rgba(170,185,215,.35)";
     ctx.stroke();
-    ctx.fillStyle = "rgba(255,255,255,.18)";
+    ctx.fillStyle = "rgba(255,255,255,.14)";
     ctx.beginPath();
     ctx.arc(cx - s * 0.12, cy - s * 0.14, s * 0.10, 0, Math.PI * 2);
     ctx.fill();
@@ -83,19 +180,18 @@
     var i, r, c, key;
 
     ctx.clearRect(0, 0, W, H);
-    rr(ctx, L - 2, T - 2, cell * G.cols + 4, cell * G.rows + 4, 13);
-    ctx.fillStyle = "#fbf6e9";
+    rr(ctx, L - 2, T - 2, cell * G.cols + 4, cell * G.rows + 4, 16);
+    var boardG = ctx.createLinearGradient(0, T, 0, T + cell * G.rows);
+    boardG.addColorStop(0, "#161d2b");
+    boardG.addColorStop(0.55, "#101623");
+    boardG.addColorStop(1, "#0a0e17");
+    ctx.fillStyle = boardG;
     ctx.fill();
-    ctx.strokeStyle = "#e3d9bd";
+    ctx.strokeStyle = "rgba(120,160,230,.28)";
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    ctx.strokeStyle = "rgba(160,140,95,.16)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (i = 0; i <= G.cols; i++) { ctx.moveTo(L + i * cell, T); ctx.lineTo(L + i * cell, T + cell * G.rows); }
-    for (i = 0; i <= G.rows; i++) { ctx.moveTo(L, T + i * cell); ctx.lineTo(L + cell * G.cols, T + i * cell); }
-    ctx.stroke();
+    ctx.strokeStyle = "rgba(130,165,230,.09)";
 
     var rest = {};
     for (r = 0; r < G.rows; r++) for (c = 0; c < G.cols; c++) {
@@ -129,26 +225,36 @@
         var ex = pxX(cl.col) + cell / 2, ey = pxY(cl.row) + cell / 2;
         var pop = 1 + 0.30 * Math.sin(Math.PI * pp);
         drawTile(ctx, cl.type, pxX(cl.col), pxY(cl.row), cell, pop, 1 - pp);
-        ctx.globalAlpha = (1 - pp) * 0.85;
+        var tcol = BG[G.typeOf(cl.type)] || "#ffb347";
+        var fr = cell * (0.32 + ppe * 0.60);
+        var flash = ctx.createRadialGradient(ex, ey, 0, ex, ey, fr);
+        flash.addColorStop(0, "rgba(255,255,255," + (0.9 * (1 - pp)).toFixed(3) + ")");
+        flash.addColorStop(0.40, "rgba(255,245,205," + (0.5 * (1 - pp)).toFixed(3) + ")");
+        flash.addColorStop(1, "rgba(255,200,120,0)");
         ctx.beginPath();
-        ctx.arc(ex, ey, cell * (0.20 + ppe * 0.80), 0, Math.PI * 2);
-        ctx.lineWidth = Math.max(1.5, cell * 0.11 * (1 - pp));
-        ctx.strokeStyle = "#ff9a3c";
+        ctx.arc(ex, ey, fr, 0, Math.PI * 2);
+        ctx.fillStyle = flash;
+        ctx.fill();
+        ctx.globalAlpha = (1 - pp) * 0.95;
+        ctx.beginPath();
+        ctx.arc(ex, ey, cell * (0.20 + ppe * 0.85), 0, Math.PI * 2);
+        ctx.lineWidth = Math.max(1.5, cell * 0.14 * (1 - pp));
+        ctx.strokeStyle = tcol;
         ctx.stroke();
-        ctx.globalAlpha = (1 - ppe) * 0.5;
+        ctx.globalAlpha = (1 - ppe) * 0.65;
         ctx.beginPath();
-        ctx.arc(ex, ey, cell * (0.15 + pp * 0.35), 0, Math.PI * 2);
-        ctx.lineWidth = Math.max(1, cell * 0.045 * (1 - ppe));
-        ctx.strokeStyle = "#ffd97a";
+        ctx.arc(ex, ey, cell * (0.15 + pp * 0.38), 0, Math.PI * 2);
+        ctx.lineWidth = Math.max(1, cell * 0.05 * (1 - ppe));
+        ctx.strokeStyle = "#fff6d8";
         ctx.stroke();
         ctx.globalAlpha = (1 - pp) * 0.9;
         ctx.beginPath();
-        for (var ray = 0; ray < 8; ray++) {
-          var ang = ray / 8 * Math.PI * 2 + pp * 0.4;
+        for (var ray = 0; ray < 12; ray++) {
+          var ang = ray / 12 * Math.PI * 2 + pp * 0.4;
           ctx.moveTo(ex + Math.cos(ang) * cell * 0.22, ey + Math.sin(ang) * cell * 0.22);
-          ctx.lineTo(ex + Math.cos(ang) * cell * (0.35 + pp * 0.60), ey + Math.sin(ang) * cell * (0.35 + pp * 0.60));
+          ctx.lineTo(ex + Math.cos(ang) * cell * (0.35 + pp * 0.65), ey + Math.sin(ang) * cell * (0.35 + pp * 0.65));
         }
-        ctx.lineWidth = Math.max(1, cell * 0.06 * (1 - pp));
+        ctx.lineWidth = Math.max(1, cell * 0.07 * (1 - pp));
         ctx.strokeStyle = "#ffffff";
         ctx.stroke();
         ctx.globalAlpha = 1;
