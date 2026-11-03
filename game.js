@@ -1,6 +1,6 @@
 "use strict";
 (function () {
-  var COLS = 10, ROWS = 10, TYPES = 7;
+  var COLS = 10, ROWS = 16, TYPES = 7;
   var SWAP_MS = 180, CLEAR_MS = 230, DROP_MS = 340;
   var TEXT = (typeof window !== "undefined" && window.TEXT) ? window.TEXT : {};
 
@@ -239,8 +239,7 @@
   G.now = function () { return now; };
 
   G.onResize = function (W, H) {
-    var side = Math.min(W, H);
-    var cell = Math.floor(side / COLS);
+    var cell = Math.floor(Math.min(W / COLS, H / ROWS));
     G.geom.left = Math.floor((W - cell * COLS) / 2);
     G.geom.top = Math.floor((H - cell * ROWS) / 2);
     G.geom.cell = cell;
