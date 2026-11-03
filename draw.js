@@ -103,10 +103,7 @@
     }
     ctx.beginPath();
     ctx.arc(cx, cy, half, 0, Math.PI * 2);
-    var body = ctx.createLinearGradient(0, cy - half, 0, cy + half);
-    body.addColorStop(0, shade(BG[type], 0.30));
-    body.addColorStop(0.52, BG[type]);
-    body.addColorStop(1, shade(BG[type], -0.34));
+    var body = BG[type];
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,.50)";
     ctx.shadowBlur = cell * 0.14;
