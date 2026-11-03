@@ -83,15 +83,6 @@
         var cy = g.top + c.row * g.cell + g.cell / 2;
         if (window.PixelFX) window.PixelFX[n >= 5 ? "specialClear" : "clearBurst"](cx, cy, c.type % 7);
       }
-    } else if (type === "cascade") {
-      var gc = window.Game.geom;
-      var grid = window.Game.grid;
-      if (window.PixelFX && grid) {
-        window.PixelFX.cascadeFlash(
-          gc.left + gc.cell * grid[0].length / 2,
-          gc.top + gc.cell * grid.length / 2
-        );
-      }
     } else if (type === "power") {
       var pg = window.Game.geom;
       var px = pg.left + val.col * pg.cell + pg.cell / 2;
