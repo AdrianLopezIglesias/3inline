@@ -18,13 +18,15 @@
     if (window.Game && Game.onResize) Game.onResize(W, H);
   }
 
-  var ro = new ResizeObserver(resize);
-  ro.observe(canvas.parentElement);
+  if (window.ResizeObserver) {
+    new ResizeObserver(resize).observe(canvas.parentElement);
+  }
   window.addEventListener("resize", resize);
 
   var last = performance.now();
   function loop(now) {
     var dt = Math.min((now - last) / 1000, 0.1);
+    if (!W || !H) resize();
     last = now;
     if (window.Game && Game.update) Game.update(dt);
     if (window.PixelFX && PixelFX.update) PixelFX.update(dt);
