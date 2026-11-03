@@ -171,48 +171,49 @@
       var rampColors = TYPE_RAMPS;
       // main burst
       FX.active.push(new Burst({
-        x: x, y: y, count: 30, speedMin: 40, speedMax: 150,
-        lifeMin: 0.28, lifeMax: 0.6, sizeMin: 1.8, sizeMax: 5.5,
-        ramp: rampColors[type % 7], gravity: 40, drag: 1.2, alphaMul: 1.15,
+        x: x, y: y, count: 60, speedMin: 50, speedMax: 260,
+        lifeMin: 0.32, lifeMax: 0.85, sizeMin: 2.5, sizeMax: 8,
+        ramp: rampColors[type % 7], gravity: 35, drag: 1.0, alphaMul: 1.4,
       }));
       // sparkle twins
-      FX.active.push(new Sparkle({ x: x, y: y, vx: 50, vy: -38, life: 0.45, size: 3.5, col: [255, 255, 240] }));
-      FX.active.push(new Sparkle({ x: x, y: y, vx: -45, vy: -32, life: 0.4, size: 3, col: [255, 255, 240] }));
+      FX.active.push(new Sparkle({ x: x, y: y, vx: 70, vy: -55, life: 0.55, size: 4.5, col: [255, 255, 240] }));
+      FX.active.push(new Sparkle({ x: x, y: y, vx: -65, vy: -48, life: 0.5, size: 4, col: [255, 255, 240] }));
       // ring
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: 48, life: 0.45, col: rampColors[type % 7][2] }));
+      FX.active.push(new RingSnap({ x: x, y: y, rMax: 75, life: 0.55, col: rampColors[type % 7][2] }));
     },
 
     specialClear: function (x, y, type) {
       var rampColors = TYPE_RAMPS;
       // bigger burst for specials
       FX.active.push(new Burst({
-        x: x, y: y, count: 54, speedMin: 60, speedMax: 230,
-        lifeMin: 0.35, lifeMax: 0.8, sizeMin: 2.5, sizeMax: 7,
-        ramp: rampColors[type % 7], gravity: 30, drag: 0.8,
+        x: x, y: y, count: 110, speedMin: 80, speedMax: 340,
+        lifeMin: 0.4, lifeMax: 1.0, sizeMin: 3, sizeMax: 10,
+        ramp: rampColors[type % 7], gravity: 25, drag: 0.6, alphaMul: 1.4,
       }));
       // radial sparkles
       var i, a;
-      for (i = 0; i < 8; i++) {
-        a = (i / 8) * Math.PI * 2;
+      for (i = 0; i < 14; i++) {
+        a = (i / 14) * Math.PI * 2;
         FX.active.push(new Sparkle({
-          x: x, y: y, vx: Math.cos(a) * 90, vy: Math.sin(a) * 90,
-          life: 0.45 + Math.random() * 0.25, size: 3.5 + Math.random() * 2.5,
+          x: x, y: y, vx: Math.cos(a) * 130, vy: Math.sin(a) * 130,
+          life: 0.5 + Math.random() * 0.35, size: 4 + Math.random() * 3.5,
           col: [255, 255, 240]
         }));
       }
       // double ring
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: 65, life: 0.35, col: rampColors[type % 7][1] }));
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: 40, life: 0.5, col: [255, 255, 255] }));
+      FX.active.push(new RingSnap({ x: x, y: y, rMax: 95, life: 0.4, col: rampColors[type % 7][1] }));
+      FX.active.push(new RingSnap({ x: x, y: y, rMax: 60, life: 0.6, col: [255, 255, 255] }));
     },
 
     cascadeFlash: function (x, y) {
       FX.active.push(new Burst({
-        x: x, y: y, count: 42, speedMin: 70, speedMax: 200,
-        lifeMin: 0.3, lifeMax: 0.7, sizeMin: 2.5, sizeMax: 6.5,
+        x: x, y: y, count: 90, speedMin: 90, speedMax: 320,
+        lifeMin: 0.35, lifeMax: 0.9, sizeMin: 3, sizeMax: 9,
         ramp: [[255, 255, 220], [255, 240, 120], [255, 200, 80], [255, 160, 40], [200, 100, 20]],
-        gravity: 20, drag: 0.7,
+        gravity: 20, drag: 0.6, alphaMul: 1.4,
       }));
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: 60, life: 0.35, col: [255, 230, 100] }));
+      FX.active.push(new RingSnap({ x: x, y: y, rMax: 90, life: 0.4, col: [255, 230, 100] }));
+      FX.active.push(new RingSnap({ x: x, y: y, rMax: 55, life: 0.55, col: [255, 255, 255] }));
     },
 
     /* frame hooks */
