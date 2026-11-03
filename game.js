@@ -4,7 +4,7 @@
   var SWAP_MS = 180, CLEAR_MS = 230, DROP_MS = 340;
   var TEXT = (typeof window !== "undefined" && window.TEXT) ? window.TEXT : {};
 
-  var SYMBOLS = 3, SYMBOL_BASE = TYPES * SYMBOLS;
+  var SYMBOLS = 6, SYMBOL_BASE = TYPES * SYMBOLS;
   var ROCK = SYMBOL_BASE * 10;
   var ABILITY_SLOTS = 3, ABILITY_POINTS = 300;
   var SPECIAL_ROW = 1, SPECIAL_COL = 2, SPECIAL_BOMB = 3,

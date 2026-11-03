@@ -16,7 +16,7 @@ var TEXT = {
   endTitle: "Out of moves",
   endText: function (s, b) { return "Score: " + s + ". Best: " + b + "."; },
   colors: ["Orange", "Green", "Gold", "Red", "Purple", "Slate", "Blue"],
-  symbols: ["Ring", "Triangle", "Diamond"],
+  symbols: ["Ring", "Triangle", "Diamond", "Star", "Hexagon", "Cross"],
   abilityLabel: function (color, symbol) { return color + " " + symbol; },
   abilityProgress: function (have, need) { return have + "/" + need; },
   abilityDone: "Ability filled!",
