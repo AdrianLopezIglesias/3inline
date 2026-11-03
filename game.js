@@ -1,6 +1,6 @@
 "use strict";
 (function () {
-  var COLS = 10, ROWS = 14, TYPES = 7;
+  var COLS = 8, ROWS = 16, TYPES = 7;
   var SWAP_MS = 180, CLEAR_MS = 230, DROP_MS = 340;
   var TEXT = (typeof window !== "undefined" && window.TEXT) ? window.TEXT : {};
 

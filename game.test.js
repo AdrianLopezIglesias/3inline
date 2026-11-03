@@ -187,7 +187,7 @@ test("cross special clears its row and its column", () => {
   g[4][4] = T.makeSpecial(T.SPECIAL_CROSS, 1);
   G.grid = g;
   const cleared = T.expandClears([[4, 4]]);
-  assert.ok(cleared.some(([r, c]) => r === 4 && c === 9), "row is cleared");
+  assert.ok(cleared.some(([r, c]) => r === 4 && c === T.COLS - 1), "row is cleared");
   assert.ok(cleared.some(([r, c]) => r === 9 && c === 4), "column is cleared");
   assert.equal(cleared.some(([r, c]) => r === 2 && c === 2), false, "far corner survives");
 });
@@ -248,7 +248,7 @@ test("picked blast gem clears the target and its neighbours", () => {
   assert.equal(G.grid[0][0], -1, "the picked gem is cleared");
   assert.equal(G.grid[5][5], -1, "the target is cleared");
   assert.equal(G.grid[4][4], -1, "a neighbour is cleared");
-  assert.ok(G.grid[8][8] >= 0, "a distant crop survives");
+  assert.ok(G.grid[8][T.COLS - 1] >= 0, "a distant crop survives");
 });
 
 test("an L-shaped run spawns a cross gem at the corner", () => {
