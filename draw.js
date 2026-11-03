@@ -1,6 +1,6 @@
 "use strict";
 (function () {
-  var BG = ["#ff1f2d", "#00e05a", "#ffd400", "#ff1f8f", "#8a2cff", "#6b7488", "#1f7bff"];
+  var BG = ["#d4361f", "#148f3f", "#e0a412", "#c81e5a", "#6a2fc9", "#3f4756", "#1a6fd4"];
   var INK = "#fff6e6";
   var EDGE = "rgba(8,10,16,.55)";
 
@@ -93,49 +93,28 @@
       ctx.fillStyle = glow;
       ctx.fill();
     }
-    polygon(ctx, cx, cy, half, 8, Math.PI / 8);
+    rr(ctx, cx - half, cy - half, half * 2, half * 2, cell * 0.20);
     var body = ctx.createLinearGradient(0, cy - half, 0, cy + half);
-    body.addColorStop(0, shade(BG[type], 0.48));
-    body.addColorStop(0.45, BG[type]);
-    body.addColorStop(1, shade(BG[type], -0.48));
+    body.addColorStop(0, shade(BG[type], 0.30));
+    body.addColorStop(0.52, BG[type]);
+    body.addColorStop(1, shade(BG[type], -0.34));
     ctx.save();
-    ctx.shadowColor = "rgba(0,0,0,.70)";
-    ctx.shadowBlur = cell * 0.16;
+    ctx.shadowColor = "rgba(0,0,0,.50)";
+    ctx.shadowBlur = cell * 0.14;
     ctx.shadowOffsetY = cell * 0.05;
     ctx.fillStyle = body;
     ctx.fill();
     ctx.restore();
-    var tr = half * 0.52;
-    for (var f = 0; f < 8; f++) {
-      var a0 = Math.PI / 8 + f * Math.PI / 4;
-      var a1 = a0 + Math.PI / 4;
-      ctx.beginPath();
-      ctx.moveTo(cx + Math.cos(a0 + Math.PI / 8) * tr, cy + Math.sin(a0 + Math.PI / 8) * tr);
-      ctx.lineTo(cx + Math.cos(a0) * half, cy + Math.sin(a0) * half);
-      ctx.lineTo(cx + Math.cos(a1) * half, cy + Math.sin(a1) * half);
-      ctx.closePath();
-      ctx.fillStyle = f % 2 ? "rgba(255,255,255,.20)" : "rgba(0,0,0,.18)";
-      ctx.fill();
-    }
-    polygon(ctx, cx, cy, tr, 8, Math.PI / 8);
-    var table = ctx.createLinearGradient(cx, cy - tr, cx, cy + tr);
-    table.addColorStop(0, shade(BG[type], 0.58));
-    table.addColorStop(1, shade(BG[type], 0.06));
-    ctx.fillStyle = table;
-    ctx.fill();
-    ctx.lineWidth = Math.max(1, cell * 0.012);
-    ctx.strokeStyle = "rgba(255,255,255,.35)";
-    ctx.stroke();
-    polygon(ctx, cx, cy, half, 8, Math.PI / 8);
-    ctx.lineWidth = Math.max(1, cell * 0.03);
+    rr(ctx, cx - half, cy - half, half * 2, half * 2, cell * 0.20);
+    ctx.lineWidth = Math.max(1, cell * 0.028);
     ctx.strokeStyle = EDGE;
     ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cx - half * 0.62, cy - half * 0.42);
-    ctx.lineTo(cx - half * 0.18, cy - half * 0.84);
-    ctx.lineWidth = Math.max(1, cell * 0.022);
-    ctx.strokeStyle = "rgba(255,255,255,.65)";
-    ctx.stroke();
+    rr(ctx, cx - half, cy - half, half * 2, half * 0.52, cell * 0.20);
+    var sheen = ctx.createLinearGradient(0, cy - half, 0, cy - half + half * 0.52);
+    sheen.addColorStop(0, "rgba(255,255,255,.30)");
+    sheen.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = sheen;
+    ctx.fill();
     symbolPath(ctx, type, cx, cy + cell * 0.01, s * 0.27);
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,.45)";
@@ -171,7 +150,7 @@
     var pad = cell * 0.07;
     var cx = x + cell / 2, cy = y + cell / 2;
     ctx.globalAlpha = (alpha == null ? 1 : alpha);
-    polygon(ctx, cx, cy, s / 2 - pad, 8, Math.PI / 8);
+    rr(ctx, cx - s / 2 + pad, cy - s / 2 + pad, s - pad * 2, s - pad * 2, cell * 0.14);
     var stone = ctx.createLinearGradient(0, cy - s / 2, 0, cy + s / 2);
     stone.addColorStop(0, "#4b5365");
     stone.addColorStop(0.55, "#333a49");
@@ -202,7 +181,11 @@
 
     ctx.clearRect(0, 0, W, H);
     rr(ctx, L - 2, T - 2, cell * G.cols + 4, cell * G.rows + 4, 16);
-    ctx.fillStyle = "#000000";
+    var boardG = ctx.createLinearGradient(0, T, 0, T + cell * G.rows);
+    boardG.addColorStop(0, "#161d2b");
+    boardG.addColorStop(0.55, "#101623");
+    boardG.addColorStop(1, "#0a0e17");
+    ctx.fillStyle = boardG;
     ctx.fill();
     ctx.strokeStyle = "rgba(120,160,230,.28)";
     ctx.lineWidth = 2;
@@ -299,12 +282,12 @@
       var selPulse = Math.sin(performance.now() / 180);
       ctx.strokeStyle = "#e0702a";
       ctx.lineWidth = Math.max(2, cell * 0.05);
-      polygon(ctx, L + G.sel[1] * cell + cell / 2, T + G.sel[0] * cell + cell / 2, cell / 2 - 1, 8, Math.PI / 8);
+      rr(ctx, L + G.sel[1] * cell + 1, T + G.sel[0] * cell + 1, cell - 2, cell - 2, cell * 0.18);
       ctx.stroke();
       ctx.globalAlpha = 0.35 + 0.25 * selPulse;
       ctx.lineWidth = Math.max(1.5, cell * 0.04);
       var pulseOff = cell * 0.04 * (1 + selPulse);
-      polygon(ctx, L + G.sel[1] * cell + cell / 2, T + G.sel[0] * cell + cell / 2, cell / 2 - 1 + pulseOff, 8, Math.PI / 8);
+      rr(ctx, L + G.sel[1] * cell + 1 - pulseOff, T + G.sel[0] * cell + 1 - pulseOff, cell - 2 + pulseOff * 2, cell - 2 + pulseOff * 2, cell * 0.18 + pulseOff);
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
