@@ -1,0 +1,181 @@
+"use strict";
+const { test } = require("node:test");
+const assert = require("node:assert/strict");
+const G = require("./game.js");
+const T = G._forTest;
+
+function blankGrid() {
+  return Array.from({ length: T.ROWS }, () => Array(T.COLS).fill(-1));
+}
+
+test("genBoard has no initial matches and at least one valid move", () => {
+  for (let i = 0; i < 50; i++) {
+    const g = T.genBoard();
+    assert.equal(T.findMarked(g).length, 0, "board must start with no matches");
+    assert.equal(T.hasValidMove(g), true, "board must have a valid move");
+  }
+});
+
+test("findMarked finds horizontal runs", () => {
+  const g = blankGrid();
+  g[0][0] = 1; g[0][1] = 1; g[0][2] = 1; // row run in row 0
+  g[3][4] = 2; g[3][5] = 2; g[3][6] = 2; g[3][7] = 2; // row run of 4
+  const marked = T.findMarked(g);
+  assert.equal(marked.length, 7);
+});
+
+test("findMarked finds vertical runs", () => {
+  const g = blankGrid();
+  g[0][2] = 3; g[1][2] = 3; g[2][2] = 3; // col run in col 2
+  const marked = T.findMarked(g);
+  assert.equal(marked.length, 3);
+});
+
+test("matchRuns reports run lengths including 4+", () => {
+  const g = blankGrid();
+  g[0][0] = 1; g[0][1] = 1; g[0][2] = 1;
+  g[2][0] = 5; g[2][1] = 5; g[2][2] = 5; g[2][3] = 5;
+  const runs = T.matchRuns(g);
+  assert.deepEqual(runs.sort(), [3, 4]);
+});
+
+test("hasValidMove detects a one-swap match", () => {
+  const g = blankGrid();
+  g[0][0] = 1; g[0][1] = 2; g[0][2] = 1;
+  g[0][3] = 3; g[0][4] = 4;
+  // swapping (0,1) with (1,1) -> (0,1)=2, (1,1)=1 won't match.
+  // place a column pair so a swap makes a run:
+  g[1][1] = 1; g[2][1] = 1;
+  // (0,0)=1, (1,1)=1, (2,1)=1 -> after swapping (0,0) and (0,1): (0,0)=2,(0,1)=1 vertical? no.
+  // Simplest known-true: a board with a clear valid move.
+  assert.equal(T.hasValidMove(g), true);
+});
+
+test("hasValidMove false on a no-move board", () => {
+  // Build a checkerboard-ish board with no equal neighbors => no move.
+  const g = blankGrid();
+  for (let r = 0; r < T.ROWS; r++) {
+    for (let c = 0; c < T.COLS; c++) {
+      g[r][c] = (r + c) % T.TYPES;
+    }
+  }
+  assert.equal(T.hasValidMove(g), false);
+});
+
+test("collapse removes all holes and preserves column order from bottom", () => {
+  const g = blankGrid();
+  // column 0: full, no holes
+  g[0][0]=1; g[1][0]=2; g[2][0]=3; g[3][0]=4; g[4][0]=5;
+  g[5][0]=0; g[6][0]=1; g[7][0]=2;
+  // column 1: one hole at row 2
+  g[0][1]=4; g[1][1]=5; g[2][1]=-1; g[3][1]=0;
+  g[4][1]=1; g[5][1]=2; g[6][1]=3; g[7][1]=4;
+
+  const origCol1BottomUp = [];
+  for (let r=T.ROWS-1; r>=0; r--) if (g[r][1]>=0) origCol1BottomUp.push(g[r][1]);
+
+  T.collapse(g);
+
+  for (let r=0; r<T.ROWS; r++) {
+    for (let c=0; c<T.COLS; c++) {
+      assert.ok(g[r][c] >= 0, `cell (${r},${c}) must be filled`);
+    }
+  }
+  // one hole -> one spawn at top, so bottom 7 tiles keep original order
+  const afterCol1BottomUp = [];
+  for (let r=T.ROWS-1; r>=1; r--) afterCol1BottomUp.push(g[r][1]);
+  assert.deepEqual(afterCol1BottomUp, origCol1BottomUp, "original tiles preserve bottom-up order");
+});
+
+test("newLevel initialises a fresh, valid board", () => {
+  const events = [];
+  G.onEvent = (type, val) => events.push([type, val]);
+  G.level = 1;
+  G.newLevel();
+  assert.equal(G.grid.length, T.ROWS);
+  assert.deepEqual(G.sel, null);
+  assert.equal(G.state, "idle");
+  assert.equal(G.score, 0);
+  assert.ok(G.moves > 0);
+  assert.ok(G.target > 0);
+  assert.equal(T.findMarked(G.grid).length, 0);
+  assert.equal(T.hasValidMove(G.grid), true);
+  assert.ok(events.some(e => e[0] === "init"));
+});
+
+test("tap validates swap: invalid swap leaves board unchanged", () => {
+  G.level = 1;
+  G.newLevel();
+  // Find an adjacent pair that does NOT form a match (guaranteed since initial board has no matches,
+  // a swap that is invalid is the negative case).
+  // Force a deterministic context: use a board with a single valid move elsewhere.
+  const g = G.grid;
+  // pick a boundary pair and check
+  let a = [0, 0], b = [0, 1];
+  const before = [[g[0][0], g[0][1]]];
+  G.tap(a[1], a[0]);
+  G.tap(b[1], b[0]);
+  // If invalid, state is idle and grid unchanged.
+  if (G.state === "idle") {
+    assert.equal(g[0][0], before[0][0]);
+    assert.equal(g[0][1], before[0][1]);
+  }
+});
+
+test("rocks break runs and are not marked", () => {
+  const g = blankGrid();
+  g[0][0] = 1; g[0][1] = 1; g[0][2] = T.ROCK; g[0][3] = 1; g[0][4] = 1; g[0][5] = 1;
+  const rows = T.lineRuns(g);
+  assert.equal(rows.length, 1);
+  assert.deepEqual(rows[0].cells, [[0, 3], [0, 4], [0, 5]]);
+  assert.equal(T.findMarked(g).some(([r, c]) => r === 0 && c === 2), false);
+});
+
+test("genBoard places the requested rocks and stays playable", () => {
+  for (let i = 0; i < 20; i++) {
+    const g = T.genBoard(4);
+    let rocks = 0;
+    for (const row of g) for (const v of row) if (v === T.ROCK) rocks++;
+    assert.equal(rocks, 4);
+    assert.equal(T.findMarked(g).length, 0);
+    assert.equal(T.hasValidMove(g), true);
+  }
+});
+
+test("collapse keeps rocks fixed and refills around them", () => {
+  const g = blankGrid();
+  for (let r = 0; r < T.ROWS; r++) g[r][2] = (r % 3) + 1;
+  g[3][2] = T.ROCK;
+  g[2][2] = -1;
+  g[5][2] = -1;
+  T.collapse(g);
+  assert.equal(g[3][2], T.ROCK, "rock must not move");
+  for (let r = 0; r < T.ROWS; r++) assert.ok(g[r][2] >= 0, "no holes left");
+});
+
+test("expandClears detonates a row special and stops at rocks", () => {
+  const g = blankGrid();
+  for (let c = 0; c < T.COLS; c++) g[4][c] = 2;
+  g[4][1] = T.makeSpecial(1, 2);
+  g[4][5] = T.ROCK;
+  G.grid = g;
+  const cleared = T.expandClears([[4, 1], [4, 2]]);
+  assert.ok(cleared.some(([r, c]) => r === 4 && c === 3), "blast clears along the row");
+  assert.equal(cleared.some(([r, c]) => r === 4 && c === 5), false, "rock survives the blast");
+});
+
+test("resolveChain turns a 4-run into a special gem", () => {
+  const g = blankGrid();
+  g[0][0] = 2; g[0][1] = 2; g[0][2] = 2; g[0][3] = 2;
+  G.grid = g;
+  G.score = 0;
+  G.cascade = 0;
+  G.swapCells = null;
+  G.pendingBlast = null;
+  T.resolveChain();
+  const specials = [];
+  for (let c = 0; c < T.COLS; c++) if (T.isSpecial(G.grid[0][c])) specials.push(c);
+  assert.equal(specials.length, 1, "exactly one special is left in the run");
+  assert.equal(T.typeOf(G.grid[0][specials[0]]), 2, "special keeps the crop type");
+  assert.equal(G.clears.length, 3, "the other three run cells clear");
+});

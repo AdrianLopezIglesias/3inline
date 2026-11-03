@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Farm 3 · match-three</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Farm 3</h1>
+      <div class="stats">
+        <div class="stat"><span class="k">Level</span><span class="v" id="level">1</span></div>
+        <div class="stat"><span class="k">Score</span><span class="v" id="score">0</span></div>
+        <div class="stat"><span class="k">Moves</span><span class="v" id="moves">0</span></div>
+      </div>
+    </header>
+    <main>
+      <div id="boardWrap"><canvas id="board"></canvas></div>
+    </main>
+    <footer>
+      <span class="goal">Goal <b id="goal">0</b> pts</span>
+      <span id="hint"></span>
+    </footer>
+  </div>
+  <div id="flash"></div>
+  <div id="overlay">
+    <div class="dialog">
+      <h2 id="ovTitle"></h2>
+      <p id="ovText"></p>
+      <button id="ovBtn"></button>
+    </div>
+  </div>
+  <script src="text.js"></script>
+  <script src="stage.js"></script>
+  <script src="game.js"></script>
+  <script src="fx.js"></script>
+  <script src="draw.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
