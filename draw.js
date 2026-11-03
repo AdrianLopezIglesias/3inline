@@ -1,6 +1,6 @@
 "use strict";
 (function () {
-  var BG = ["#8a4638", "#2d6a4f", "#97703a", "#974557", "#5c4270", "#40505e", "#3f5e7a"];
+  var BG = ["#b8472c", "#2d6a4f", "#c08a1e", "#c02a52", "#7a34b4", "#3f6188", "#2a72c4"];
   var INK = "#fff6e6";
   var EDGE = "rgba(8,10,16,.55)";
 
