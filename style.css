@@ -7,7 +7,7 @@
   --accent2: #24c96e;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; margin: 0; }
+html, body { min-height: 100%; margin: 0; }
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   background: linear-gradient(180deg, #16203a, var(--bg) 55%, #05070d);
@@ -15,13 +15,14 @@ body {
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 #app {
   max-width: 624px;
   margin: 0 auto;
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
@@ -39,10 +40,10 @@ h1 { font-size: 20px; margin: 0; letter-spacing: .3px; color: #4fe89b; text-shad
 }
 .stat .k { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: #93a3bf; }
 .stat .v { font-size: 18px; font-weight: 700; line-height: 1.1; color: #f6faff; text-shadow: 0 0 14px rgba(90, 160, 255, .35); }
-main { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
+main { flex: 1 0 auto; display: flex; align-items: flex-start; justify-content: center; min-height: 0; }
 #boardWrap {
   width: min(100%, 600px);
-  aspect-ratio: 9 / 13;
+  aspect-ratio: 8 / 12;
   position: relative;
 }
 canvas { width: 100%; height: 100%; display: block; touch-action: none; border-radius: 14px; box-shadow: 0 0 0 1px #24314b, 0 12px 34px rgba(0, 0, 0, .6); }
