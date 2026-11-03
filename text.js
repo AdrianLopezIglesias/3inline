@@ -15,5 +15,10 @@ var TEXT = {
   newBestTitle: "New best!",
   endTitle: "Out of moves",
   endText: function (s, b) { return "Score: " + s + ". Best: " + b + "."; },
+  colors: ["Red", "Green", "Gold", "Pink", "Purple", "Slate", "Blue"],
+  symbols: ["Ring", "Triangle", "Diamond"],
+  abilityLabel: function (color, symbol) { return color + " " + symbol; },
+  abilityProgress: function (have, need) { return have + "/" + need; },
+  abilityDone: "Ability filled!",
   again: "Play again"
 };

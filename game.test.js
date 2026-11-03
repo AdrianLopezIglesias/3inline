@@ -267,3 +267,88 @@ test("an L-shaped run spawns a cross gem at the corner", () => {
   assert.equal(T.isSpecial(G.grid[0][0]), true, "the corner holds a special");
   assert.equal(T.powerOf(G.grid[0][0]), T.SPECIAL_CROSS, "and it is a cross");
 });
+
+test("a run matches on colour even when the symbols differ", () => {
+  const g = blankGrid();
+  g[0][0] = 0 * T.TYPES + 1; // colour 1, ring
+  g[0][1] = 1 * T.TYPES + 1; // colour 1, triangle
+  g[0][2] = 2 * T.TYPES + 1; // colour 1, diamond
+  const marked = T.findMarked(g);
+  assert.equal(marked.length, 3, "three of a colour is a set whatever the symbols");
+  assert.equal(T.typeOf(g[0][0]), 1);
+  assert.deepEqual([0, 1, 2], [g[0][0], g[0][1], g[0][2]].map(T.symbolOf));
+});
+
+test("randTile covers every colour and every symbol", () => {
+  const colors = new Set(), symbols = new Set();
+  for (let i = 0; i < 600; i++) {
+    const v = T.randTile();
+    assert.equal(T.isSpecial(v), false);
+    colors.add(T.typeOf(v));
+    symbols.add(T.symbolOf(v));
+  }
+  assert.equal(colors.size, T.TYPES);
+  assert.equal(symbols.size, T.SYMBOLS);
+});
+
+test("makeSpecial round-trips through the symbol layer", () => {
+  for (let p = 1; p <= 8; p++) {
+    for (let t = 0; t < T.TYPES; t++) {
+      const v = T.makeSpecial(p, t);
+      assert.equal(T.isSpecial(v), true);
+      assert.equal(T.powerOf(v), p);
+      assert.equal(T.typeOf(v), t);
+      assert.equal(T.symbolOf(v), -1, "specials carry no harvestable symbol");
+    }
+  }
+});
+
+test("rollAbilities hands out distinct colour+symbol needs each game", () => {
+  for (let i = 0; i < 100; i++) {
+    const list = T.rollAbilities();
+    assert.equal(list.length, T.ABILITY_SLOTS);
+    const keys = new Set(list.map(a => a.color + ":" + a.symbol));
+    assert.equal(keys.size, list.length, "no two abilities ask for the same pair");
+    for (const a of list) {
+      assert.ok(a.need >= 4 && a.need <= 8, "need stays in reach");
+      assert.equal(a.have, 0);
+      assert.equal(a.done, false);
+    }
+  }
+});
+
+test("harvestAbilities counts only the asked colour and symbol", () => {
+  const ability = { color: 2, symbol: 1, need: 3, have: 0, done: false };
+  const tiles = [
+    { type: 1 * T.TYPES + 2 }, // right pair
+    { type: 1 * T.TYPES + 2 }, // right pair
+    { type: 1 * T.TYPES + 3 }, // right symbol, wrong colour
+    { type: 0 * T.TYPES + 2 }, // right colour, wrong symbol
+    { type: T.makeSpecial(1, 2) } // special has no symbol
+  ];
+  assert.equal(T.harvestAbilities([ability], tiles), 0);
+  assert.equal(ability.have, 2);
+  assert.equal(ability.done, false);
+});
+
+test("filling an ability pays bonus points and marks it done", () => {
+  const ability = { color: 4, symbol: 2, need: 3, have: 0, done: false };
+  const tiles = [1, 2, 3].map(() => ({ type: 2 * T.TYPES + 4 }));
+  const points = T.harvestAbilities([ability], tiles);
+  assert.ok(points > 0, "a filled ability is worth bonus points");
+  assert.equal(ability.have, ability.need);
+  assert.equal(ability.done, true);
+  assert.equal(T.harvestAbilities([ability], tiles), 0, "a done ability pays out once");
+});
+
+test("newGame rolls a fresh set of abilities and announces them", () => {
+  const events = [];
+  G.onEvent = (type, val) => events.push([type, val]);
+  G.newGame();
+  assert.equal(G.abilities.length, T.ABILITY_SLOTS);
+  for (const a of G.abilities) {
+    assert.equal(a.have, 0);
+    assert.equal(a.done, false);
+  }
+  assert.ok(events.some(e => e[0] === "abilities"), "the ui is told about the set");
+});

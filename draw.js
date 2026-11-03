@@ -86,6 +86,7 @@
     if (G.isRock(value)) { drawRock(ctx, x, y, cell, scale, alpha); return; }
     var special = G.isSpecial(value);
     var type = G.typeOf(value);
+    var symbol = G.symbolOf(value);
     var pad = cell * 0.055;
     var s = cell * (scale == null ? 1 : scale);
     var cx = x + cell / 2, cy = y + cell / 2;
@@ -118,7 +119,7 @@
     ctx.lineWidth = Math.max(1, cell * 0.028);
     ctx.strokeStyle = EDGE;
     ctx.stroke();
-    symbolPath(ctx, type, cx, cy + cell * 0.01, s * 0.27);
+    symbolPath(ctx, symbol < 0 ? type : symbol, cx, cy + cell * 0.01, s * 0.27);
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,.45)";
     ctx.shadowBlur = cell * 0.07;
@@ -317,5 +318,5 @@
   function pxX(c) { return window.Game.geom.left + c * window.Game.geom.cell; }
   function pxY(r) { return window.Game.geom.top + r * window.Game.geom.cell; }
 
-  window.Draw = { render: render };
+  window.Draw = { render: render, palette: BG };
 })();

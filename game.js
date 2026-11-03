@@ -4,19 +4,25 @@
   var SWAP_MS = 180, CLEAR_MS = 230, DROP_MS = 340;
   var TEXT = (typeof window !== "undefined" && window.TEXT) ? window.TEXT : {};
 
-  var ROCK = TYPES * 10;
+  var SYMBOLS = 3, SYMBOL_BASE = TYPES * SYMBOLS;
+  var ROCK = SYMBOL_BASE * 10;
+  var ABILITY_SLOTS = 3, ABILITY_POINTS = 300;
   var SPECIAL_ROW = 1, SPECIAL_COL = 2, SPECIAL_BOMB = 3,
     SPECIAL_CROSS = 4, SPECIAL_BLAST = 5, SPECIAL_SUPER = 6,
     POWER_BLAST = 7, POWER_UPGRADE = 8;
 
   function isRock(t) { return t === ROCK; }
-  function isSpecial(t) { return t >= TYPES * 2 && t < ROCK; }
+  function isSpecial(t) { return t >= SYMBOL_BASE && t < ROCK; }
   function typeOf(t) { return (t < 0 || t === ROCK) ? -1 : t % TYPES; }
-  function powerOf(t) {
-    if (t < TYPES * 2 || t >= ROCK) return -1;
-    return Math.floor(t / TYPES) - 1;
+  function symbolOf(t) {
+    if (t < 0 || t >= SYMBOL_BASE) return -1;
+    return Math.floor(t / TYPES);
   }
-  function makeSpecial(power, type) { return TYPES * (power + 1) + type; }
+  function powerOf(t) {
+    if (t < SYMBOL_BASE || t >= ROCK) return -1;
+    return Math.floor((t - SYMBOL_BASE) / TYPES);
+  }
+  function makeSpecial(power, type) { return SYMBOL_BASE + TYPES * power + type; }
   function specialFor(len, horizontal) {
     if (len >= 6) return SPECIAL_BLAST;
     if (len >= 5) return SPECIAL_SUPER;
@@ -24,6 +30,42 @@
   }
 
   function randType() { return (Math.random() * TYPES) | 0; }
+  function randTile() { return ((Math.random() * SYMBOLS) | 0) * TYPES + randType(); }
+
+  function rollAbilities() {
+    var used = {}, out = [], i, color, symbol, key;
+    for (i = 0; i < ABILITY_SLOTS; i++) {
+      do {
+        color = randType();
+        symbol = (Math.random() * SYMBOLS) | 0;
+        key = color + ":" + symbol;
+      } while (used[key]);
+      used[key] = 1;
+      out.push({ color: color, symbol: symbol, need: 4 + ((Math.random() * 5) | 0), have: 0, done: false });
+    }
+    return out;
+  }
+
+  function harvestAbilities(list, tiles) {
+    var i, j, a, v, color, symbol, points = 0;
+    for (j = 0; j < list.length; j++) {
+      a = list[j];
+      if (a.done) continue;
+      for (i = 0; i < tiles.length; i++) {
+        v = tiles[i].type;
+        color = typeOf(v);
+        symbol = symbolOf(v);
+        if (symbol < 0 || color !== a.color || symbol !== a.symbol) continue;
+        a.have++;
+      }
+      if (a.have >= a.need) {
+        a.have = a.need;
+        a.done = true;
+        points += ABILITY_POINTS;
+      }
+    }
+    return points;
+  }
 
   function findMarked(g) {
     var mark = [], seen = new Set();
@@ -122,7 +164,7 @@
       g = [];
       for (r = 0; r < ROWS; r++) {
         g[r] = [];
-        for (c = 0; c < COLS; c++) g[r][c] = randType();
+        for (c = 0; c < COLS; c++) g[r][c] = randTile();
       }
       spots = [];
       for (r = 0; r < ROWS; r++) for (c = 0; c < COLS; c++) spots.push([r, c]);
@@ -144,7 +186,7 @@
     var rocks = [], r, c;
     for (r = 0; r < ROWS; r++) for (c = 0; c < COLS; c++) if (g[r][c] === ROCK) rocks.push([r, c]);
     for (;;) {
-      for (r = 0; r < ROWS; r++) for (c = 0; c < COLS; c++) if (g[r][c] !== ROCK) g[r][c] = randType();
+      for (r = 0; r < ROWS; r++) for (c = 0; c < COLS; c++) if (g[r][c] !== ROCK) g[r][c] = randTile();
       if (findMarked(g).length === 0 && hasValidMove(g)) return;
     }
   }
@@ -153,7 +195,7 @@
     var flight = [];
     var c, r, k, t, write;
     function spawn(col, row) {
-      var nt = randType();
+      var nt = randTile();
       flight.push({ type: nt, col: col, fromR: -1, toR: row });
       return nt;
     }
@@ -184,6 +226,7 @@
     score: 0, moves: 0, bestScore: 0,
     cascade: 0,
     geom: { left: 0, top: 0, cell: 0 },
+    abilities: null,
     onEvent: null
   };
 
@@ -336,6 +379,15 @@
       G.grid[rc[0]][rc[1]] = -1;
     }
     if (clearList.length) emit("clears", clearList);
+    if (G.abilities && clearList.length) {
+      var bonus = harvestAbilities(G.abilities, clearList);
+      if (bonus) {
+        G.score += bonus;
+        emit("score", G.score);
+        emit("flash", TEXT.abilityDone);
+      }
+      emit("abilities", G.abilities);
+    }
     if (G.cascade > 1) emit("cascade", G.cascade);
     for (i = 0; i < spawns.length; i++) G.grid[spawns[i].cell[0]][spawns[i].cell[1]] = spawns[i].value;
     G.swapCells = null;
@@ -464,8 +516,10 @@
     G.swap = null;
     G.swapCells = null;
     G.pendingBlast = null;
+    G.abilities = rollAbilities();
     G.state = "idle";
     emit("init", { moves: G.moves, score: 0, best: G.bestScore });
+    emit("abilities", G.abilities);
     emit("hint", TEXT.hint);
     emit("hidden", true);
   };
@@ -505,7 +559,14 @@
     ROCK: ROCK,
     COLS: COLS,
     ROWS: ROWS,
-    TYPES: TYPES
+    TYPES: TYPES,
+    SYMBOLS: SYMBOLS,
+    SYMBOL_BASE: SYMBOL_BASE,
+    symbolOf: symbolOf,
+    randTile: randTile,
+    rollAbilities: rollAbilities,
+    harvestAbilities: harvestAbilities,
+    ABILITY_SLOTS: ABILITY_SLOTS
   };
 })();
 

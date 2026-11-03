@@ -10,7 +10,8 @@
     overlay: document.getElementById("overlay"),
     ovTitle: document.getElementById("ovTitle"),
     ovText: document.getElementById("ovText"),
-    ovBtn: document.getElementById("ovBtn")
+    ovBtn: document.getElementById("ovBtn"),
+    abilities: document.getElementById("abilities")
   };
 
   var flashTimer = null;
@@ -19,6 +20,25 @@
     el.flash.classList.add("show");
     clearTimeout(flashTimer);
     flashTimer = setTimeout(function () { el.flash.classList.remove("show"); }, 900);
+  }
+
+  function showAbilities(list) {
+    if (!list) return;
+    var pal = (window.Draw && window.Draw.palette) || [];
+    var html = "", i, a, pct;
+    for (i = 0; i < list.length; i++) {
+      a = list[i];
+      pct = Math.min(100, Math.round(a.have / a.need * 100));
+      html += '<div class="ability' + (a.done ? " done" : "") + '">' +
+        '<span class="dot" style="background:' + (pal[a.color] || "#9aa8c0") + '"></span>' +
+        '<span class="txt">' +
+        '<span class="nm">' + TEXT.abilityLabel(TEXT.colors[a.color], TEXT.symbols[a.symbol]) + '</span>' +
+        '<span class="bar"><i style="width:' + pct + '%"></i></span>' +
+        '</span>' +
+        '<span class="cnt">' + TEXT.abilityProgress(a.have, a.need) + '</span>' +
+        '</div>';
+    }
+    el.abilities.innerHTML = html;
   }
 
   function ptrToCell(e) {
@@ -83,6 +103,8 @@
       el.ovText.textContent = TEXT.endText(val.score, val.best);
       el.ovBtn.textContent = TEXT.again;
       el.overlay.classList.add("show");
+    } else if (type === "abilities") {
+      showAbilities(val);
     }
   };
 
