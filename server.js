@@ -29,7 +29,7 @@ http
     res.writeHead(200, { "Content-Type": types[ext] || "application/octet-stream" });
     fs.createReadStream(file).pipe(res);
   })
-  .listen(0, "0.0.0.0", function () {
+  .listen(45663, "0.0.0.0", function () {
     const { port } = this.address();
     const os = require("os");
     const ifaces = os.networkInterfaces();
