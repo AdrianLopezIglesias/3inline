@@ -148,6 +148,69 @@
     ctx.stroke();
     ctx.globalAlpha = 1;
   };
+  /* ------------------------------------------------------------------ */
+  /*  Ember haze: fine glowing motes that rise, swell, and fade in       */
+  /*  additive blend.  Adapted from library-pixelfx's Lights/EMBER.      */
+  /* ------------------------------------------------------------------ */
+  function Embers(spec) {
+    this.particles = [];
+    var i, angle, speed;
+    for (i = 0; i < spec.count; i++) {
+      angle = Math.random() * Math.PI * 2;
+      speed = spec.speedMin + Math.random() * (spec.speedMax - spec.speedMin);
+      this.particles.push({
+        x: spec.x + (Math.random() - 0.5) * (spec.spread || 0),
+        y: spec.y + (Math.random() - 0.5) * (spec.spread || 0),
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - (spec.rise || 0),
+        life: spec.lifeMin + Math.random() * (spec.lifeMax - spec.lifeMin),
+        age: 0,
+        peak: 0.3 + Math.random() * 0.4,
+        size: spec.sizeMin + Math.random() * (spec.sizeMax - spec.sizeMin),
+        ramp: spec.ramp,
+      });
+    }
+    this.t = 0;
+    this.alphaMul = spec.alphaMul || 1;
+    this.done = false;
+  }
+  Embers.prototype.update = function (dt) {
+    if (this.done) return;
+    this.t += dt;
+    var alive = false, p, i, progress;
+    for (i = 0; i < this.particles.length; i++) {
+      p = this.particles[i];
+      p.age += dt;
+      if (p.age >= p.life) continue;
+      alive = true;
+      progress = p.age / p.life;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vx *= (1 - (p.drag || 0) * dt);
+      p.vy *= (1 - (p.drag || 0) * dt);
+      p.currentSize = p.size * (0.4 + 0.6 * Math.sin(progress * Math.PI));
+      p.color = ramp(p.ramp, progress);
+    }
+    if (!alive) this.done = true;
+  };
+  Embers.prototype.draw = function (ctx) {
+    var i, p, progress, rgb, a, s;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (i = 0; i < this.particles.length; i++) {
+      p = this.particles[i];
+      if (p.age >= p.life) continue;
+      progress = p.age / p.life;
+      rgb = p.color || ramp(p.ramp, progress);
+      a = Math.sin(progress * Math.PI) * this.alphaMul;
+      s = p.currentSize || p.size * (0.4 + 0.6 * Math.sin(progress * Math.PI));
+      if (s < 0.5) continue;
+      ctx.globalAlpha = a;
+      ctx.fillStyle = "rgb(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ")";
+      ctx.fillRect(p.x - s / 2, p.y - s / 2, s, s);
+    }
+    ctx.restore();
+  };
 
   /* ------------------------------------------------------------------ */
   /*  Effects catalog                                                    */
@@ -171,9 +234,15 @@
       var rampColors = TYPE_RAMPS;
       // main burst
       FX.active.push(new Burst({
-        x: x, y: y, count: 60, speedMin: 50, speedMax: 260,
+        x: x, y: y, count: 85, speedMin: 50, speedMax: 280,
         lifeMin: 0.32, lifeMax: 0.85, sizeMin: 2.5, sizeMax: 8,
         ramp: rampColors[type % 7], gravity: 35, drag: 1.0, alphaMul: 1.4,
+      }));
+      FX.active.push(new Embers({
+        x: x, y: y, count: 40, speedMin: 15, speedMax: 60, spread: 18,
+        lifeMin: 0.45, lifeMax: 1.0, sizeMin: 2, sizeMax: 5,
+        ramp: rampColors[type % 7].slice().reverse(),
+        rise: 30, drag: 0.7, alphaMul: 0.9,
       }));
       // sparkle twins
       FX.active.push(new Sparkle({ x: x, y: y, vx: 70, vy: -55, life: 0.55, size: 4.5, col: [255, 255, 240] }));
@@ -186,9 +255,15 @@
       var rampColors = TYPE_RAMPS;
       // bigger burst for specials
       FX.active.push(new Burst({
-        x: x, y: y, count: 110, speedMin: 80, speedMax: 340,
+        x: x, y: y, count: 140, speedMin: 80, speedMax: 360,
         lifeMin: 0.4, lifeMax: 1.0, sizeMin: 3, sizeMax: 10,
         ramp: rampColors[type % 7], gravity: 25, drag: 0.6, alphaMul: 1.4,
+      }));
+      FX.active.push(new Embers({
+        x: x, y: y, count: 75, speedMin: 25, speedMax: 85, spread: 30,
+        lifeMin: 0.6, lifeMax: 1.3, sizeMin: 2.5, sizeMax: 6,
+        ramp: rampColors[type % 7].slice().reverse(),
+        rise: 40, drag: 0.5, alphaMul: 0.9,
       }));
       // radial sparkles
       var i, a;
@@ -207,10 +282,16 @@
 
     cascadeFlash: function (x, y) {
       FX.active.push(new Burst({
-        x: x, y: y, count: 90, speedMin: 90, speedMax: 320,
+        x: x, y: y, count: 120, speedMin: 90, speedMax: 340,
         lifeMin: 0.35, lifeMax: 0.9, sizeMin: 3, sizeMax: 9,
         ramp: [[255, 255, 220], [255, 240, 120], [255, 200, 80], [255, 160, 40], [200, 100, 20]],
         gravity: 20, drag: 0.6, alphaMul: 1.4,
+      }));
+      FX.active.push(new Embers({
+        x: x, y: y, count: 55, speedMin: 20, speedMax: 70, spread: 24,
+        lifeMin: 0.5, lifeMax: 1.1, sizeMin: 2, sizeMax: 5,
+        ramp: [[255, 255, 220], [255, 230, 120], [255, 190, 80], [220, 130, 40], [120, 60, 20]],
+        rise: 30, drag: 0.6, alphaMul: 0.9,
       }));
       FX.active.push(new RingSnap({ x: x, y: y, rMax: 90, life: 0.4, col: [255, 230, 100] }));
       FX.active.push(new RingSnap({ x: x, y: y, rMax: 55, life: 0.55, col: [255, 255, 255] }));
