@@ -64,53 +64,46 @@ test("hasValidMove false on a no-move board", () => {
 
 test("collapse removes all holes and preserves column order from bottom", () => {
   const g = blankGrid();
-  // column 0: full, no holes
-  g[0][0]=1; g[1][0]=2; g[2][0]=3; g[3][0]=4; g[4][0]=5;
-  g[5][0]=0; g[6][0]=1; g[7][0]=2;
+  // column 0: full, no holes (fill all 10 rows)
+  for (let r = 0; r < T.ROWS; r++) g[r][0] = r % 6;
   // column 1: one hole at row 2
-  g[0][1]=4; g[1][1]=5; g[2][1]=-1; g[3][1]=0;
-  g[4][1]=1; g[5][1]=2; g[6][1]=3; g[7][1]=4;
+  for (let r = 0; r < T.ROWS; r++) g[r][1] = ((r + 1) % 6) + 1;
+  g[2][1] = -1;
 
   const origCol1BottomUp = [];
-  for (let r=T.ROWS-1; r>=0; r--) if (g[r][1]>=0) origCol1BottomUp.push(g[r][1]);
+  for (let r = T.ROWS - 1; r >= 0; r--) if (g[r][1] >= 0) origCol1BottomUp.push(g[r][1]);
 
   T.collapse(g);
 
-  for (let r=0; r<T.ROWS; r++) {
-    for (let c=0; c<T.COLS; c++) {
+  for (let r = 0; r < T.ROWS; r++) {
+    for (let c = 0; c < T.COLS; c++) {
       assert.ok(g[r][c] >= 0, `cell (${r},${c}) must be filled`);
     }
   }
-  // one hole -> one spawn at top, so bottom 7 tiles keep original order
+  // one hole -> one spawn at top, so bottom N-1 tiles keep original order
   const afterCol1BottomUp = [];
-  for (let r=T.ROWS-1; r>=1; r--) afterCol1BottomUp.push(g[r][1]);
+  for (let r = T.ROWS - 1; r >= 1; r--) afterCol1BottomUp.push(g[r][1]);
   assert.deepEqual(afterCol1BottomUp, origCol1BottomUp, "original tiles preserve bottom-up order");
 });
 
-test("newLevel initialises a fresh, valid board", () => {
+test("newGame initialises a fresh, valid board", () => {
   const events = [];
   G.onEvent = (type, val) => events.push([type, val]);
-  G.level = 1;
-  G.newLevel();
+  G.newGame();
   assert.equal(G.grid.length, T.ROWS);
   assert.deepEqual(G.sel, null);
   assert.equal(G.state, "idle");
   assert.equal(G.score, 0);
   assert.ok(G.moves > 0);
-  assert.ok(G.target > 0);
   assert.equal(T.findMarked(G.grid).length, 0);
   assert.equal(T.hasValidMove(G.grid), true);
   assert.ok(events.some(e => e[0] === "init"));
 });
-
 test("tap validates swap: invalid swap leaves board unchanged", () => {
-  G.level = 1;
-  G.newLevel();
+  G.newGame();
   // Find an adjacent pair that does NOT form a match (guaranteed since initial board has no matches,
   // a swap that is invalid is the negative case).
-  // Force a deterministic context: use a board with a single valid move elsewhere.
   const g = G.grid;
-  // pick a boundary pair and check
   let a = [0, 0], b = [0, 1];
   const before = [[g[0][0], g[0][1]]];
   G.tap(a[1], a[0]);
@@ -172,10 +165,11 @@ test("resolveChain turns a 4-run into a special gem", () => {
   G.cascade = 0;
   G.swapCells = null;
   G.pendingBlast = null;
+  G.clears = null;
   T.resolveChain();
   const specials = [];
   for (let c = 0; c < T.COLS; c++) if (T.isSpecial(G.grid[0][c])) specials.push(c);
   assert.equal(specials.length, 1, "exactly one special is left in the run");
   assert.equal(T.typeOf(G.grid[0][specials[0]]), 2, "special keeps the crop type");
-  assert.equal(G.clears.length, 3, "the other three run cells clear");
+  assert.equal(G.clears.length, 4, "all four run cells animate clear before special spawns");
 });

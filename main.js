@@ -4,8 +4,7 @@
   var el = {
     score: document.getElementById("score"),
     moves: document.getElementById("moves"),
-    goal: document.getElementById("goal"),
-    level: document.getElementById("level"),
+    best: document.getElementById("best"),
     hint: document.getElementById("hint"),
     flash: document.getElementById("flash"),
     overlay: document.getElementById("overlay"),
@@ -43,10 +42,9 @@
 
   window.Game.onEvent = function (type, val) {
     if (type === "init") {
-      el.level.textContent = val.level;
+      el.best.textContent = val.best;
       el.score.textContent = val.score;
       el.moves.textContent = val.moves;
-      el.goal.textContent = val.target;
       el.overlay.classList.remove("show");
     } else if (type === "score") {
       el.score.textContent = val;
@@ -75,24 +73,17 @@
         );
       }
     } else if (type === "end") {
-      if (val.won) {
-        el.ovTitle.textContent = TEXT.winTitle;
-        el.ovText.textContent = TEXT.winText(window.Game.level + 1);
-        el.ovBtn.textContent = TEXT.next;
-      } else {
-        el.ovTitle.textContent = TEXT.loseTitle;
-        el.ovText.textContent = TEXT.loseText;
-        el.ovBtn.textContent = TEXT.again;
-      }
+      var isNewBest = val.score >= val.best;
+      el.ovTitle.textContent = isNewBest ? TEXT.newBestTitle : TEXT.endTitle;
+      el.ovText.textContent = TEXT.endText(val.score, val.best);
+      el.ovBtn.textContent = TEXT.again;
       el.overlay.classList.add("show");
     }
   };
 
   el.ovBtn.addEventListener("click", function () {
-    if (el.ovBtn.textContent === TEXT.next) window.Game.level++;
-    window.Game.newLevel();
+    window.Game.newGame();
   });
 
-  window.Game.level = 1;
-  window.Game.newLevel();
+  window.Game.newGame();
 })();

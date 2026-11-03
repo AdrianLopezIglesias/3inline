@@ -1,6 +1,6 @@
 "use strict";
 (function () {
-  var COLS = 8, ROWS = 8, TYPES = 7;
+  var COLS = 10, ROWS = 10, TYPES = 7;
   var SWAP_MS = 180, CLEAR_MS = 230, DROP_MS = 340;
   var TEXT = (typeof window !== "undefined" && window.TEXT) ? window.TEXT : {};
 
@@ -173,7 +173,7 @@
   var G = {
     cols: COLS, rows: ROWS,
     grid: null, state: "idle", sel: null,
-    score: 0, target: 0, moves: 0, level: 1,
+    score: 0, moves: 0, bestScore: 0,
     cascade: 0,
     geom: { left: 0, top: 0, cell: 0 },
     onEvent: null
@@ -307,16 +307,17 @@
 
   function endTurn() {
     G.cascade = 0;
-    if (G.score >= G.target) {
-      G.state = "ended";
-      emit("end", { won: true });
-      return;
-    }
     G.moves--;
     emit("moves", G.moves);
     if (G.moves <= 0) {
       G.state = "ended";
-      emit("end", { won: false });
+      if (G.score > G.bestScore) {
+        G.bestScore = G.score;
+        if (typeof window !== "undefined" && window.localStorage) {
+          window.localStorage.setItem("farm3_best", G.bestScore);
+        }
+      }
+      emit("end", { score: G.score, best: G.bestScore });
       return;
     }
     G.pendingBlast = null;
@@ -384,14 +385,16 @@
       G.state = "swap";
     }
   };
-
-  G.newLevel = function () {
-    G.level = G.level || 1;
-    G.target = 300 + (G.level - 1) * 260;
-    G.moves = 18 + Math.min(G.level, 8);
+  G.newGame = function () {
+    var saved = 0;
+    if (typeof window !== "undefined" && window.localStorage) {
+      saved = parseInt(window.localStorage.getItem("farm3_best") || "0", 10) || 0;
+    }
+    G.bestScore = saved;
+    G.moves = 20;
     G.score = 0;
     G.cascade = 0;
-    G.grid = genBoard(Math.min(10, 2 + Math.floor((G.level - 1) / 2)));
+    G.grid = genBoard(0);
     G.sel = null;
     G.clears = null;
     G.flight = null;
@@ -399,7 +402,7 @@
     G.swapCells = null;
     G.pendingBlast = null;
     G.state = "idle";
-    emit("init", { level: G.level, target: G.target, moves: G.moves, score: 0 });
+    emit("init", { moves: G.moves, score: 0, best: G.bestScore });
     emit("hint", TEXT.hint);
     emit("hidden", true);
   };
