@@ -1,6 +1,6 @@
 "use strict";
 (function () {
-  var BG = ["#b8472c", "#2d6a4f", "#c08a1e", "#c02a52", "#7a34b4", "#3f6188", "#2a72c4"];
+  var BG = ["#b8472c", "#2d6a4f", "#c08a1e", "#dc143c", "#7a34b4", "#3f6188", "#2a72c4"];
   var INK = "#fff6e6";
   var EDGE = "rgba(8,10,16,.55)";
 
@@ -104,11 +104,18 @@
     ctx.beginPath();
     ctx.arc(cx, cy, half, 0, Math.PI * 2);
     var body = BG[type];
+    var orb = ctx.createRadialGradient(
+      cx - half * 0.34, cy - half * 0.38, half * 0.06,
+      cx - half * 0.08, cy - half * 0.04, half * 1.12);
+    orb.addColorStop(0, shade(body, 0.42));
+    orb.addColorStop(0.42, shade(body, 0.10));
+    orb.addColorStop(0.78, body);
+    orb.addColorStop(1, shade(body, -0.46));
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,.50)";
     ctx.shadowBlur = cell * 0.14;
     ctx.shadowOffsetY = cell * 0.05;
-    ctx.fillStyle = body;
+    ctx.fillStyle = orb;
     ctx.fill();
     ctx.restore();
     ctx.beginPath();
@@ -116,6 +123,18 @@
     ctx.lineWidth = Math.max(1, cell * 0.028);
     ctx.strokeStyle = EDGE;
     ctx.stroke();
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(cx - half * 0.30, cy - half * 0.40, half * 0.34, half * 0.22, -0.55, 0, Math.PI * 2);
+    var spec = ctx.createRadialGradient(
+      cx - half * 0.30, cy - half * 0.40, 0,
+      cx - half * 0.30, cy - half * 0.40, half * 0.40);
+    spec.addColorStop(0, "rgba(255,255,255,.78)");
+    spec.addColorStop(0.55, "rgba(255,255,255,.22)");
+    spec.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = spec;
+    ctx.fill();
+    ctx.restore();
     symbolPath(ctx, symbol < 0 ? type : symbol, cx, cy + cell * 0.01, s * 0.27);
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,.45)";
