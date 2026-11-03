@@ -72,6 +72,11 @@
           gc.top + gc.cell * grid.length / 2
         );
       }
+    } else if (type === "power") {
+      var pg = window.Game.geom;
+      var px = pg.left + val.col * pg.cell + pg.cell / 2;
+      var py = pg.top + val.row * pg.cell + pg.cell / 2;
+      if (window.PixelFX) window.PixelFX.powerBlast(px, py, 0);
     } else if (type === "end") {
       var isNewBest = val.score >= val.best;
       el.ovTitle.textContent = isNewBest ? TEXT.newBestTitle : TEXT.endTitle;

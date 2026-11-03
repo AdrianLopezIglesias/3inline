@@ -297,6 +297,23 @@
       FX.active.push(new RingSnap({ x: x, y: y, rMax: 75, life: 0.6, col: [255, 255, 255] }));
     },
 
+    powerBlast: function (x, y, type) {
+      var rampColors = TYPE_RAMPS;
+      FX.active.push(new Burst({
+        x: x, y: y, count: 220, speedMin: 120, speedMax: 520,
+        lifeMin: 0.4, lifeMax: 1.0, sizeMin: 4, sizeMax: 13,
+        ramp: rampColors[type % 7], gravity: 20, drag: 0.45, alphaMul: 1.7,
+      }));
+      FX.active.push(new Embers({
+        x: x, y: y, count: 120, speedMin: 40, speedMax: 130, spread: 44,
+        lifeMin: 0.6, lifeMax: 1.3, sizeMin: 3, sizeMax: 8,
+        ramp: rampColors[type % 7].slice().reverse(),
+        rise: 60, drag: 0.35, alphaMul: 1.2,
+      }));
+      FX.active.push(new RingSnap({ x: x, y: y, rMax: 230, life: 0.5, col: [255, 255, 255] }));
+      FX.active.push(new RingSnap({ x: x, y: y, rMax: 170, life: 0.7, col: rampColors[type % 7][1] }));
+    },
+
     /* frame hooks */
     update: function (dt) {
       var i, fx;

@@ -74,6 +74,13 @@
     return ctx;
   }
 
+  function powerGlyph(power) {
+    return power === 1 ? "\u2194" : power === 2 ? "\u2195" :
+      power === 3 ? "\u2736" : power === 4 ? "\u271A" :
+      power === 5 ? "\u2739" : power === 6 ? "\u2605" :
+      power === 7 ? "\u25CE" : "\u21E7";
+  }
+
   function drawTile(ctx, value, x, y, cell, scale, alpha) {
     var G = window.Game;
     if (G.isRock(value)) { drawRock(ctx, x, y, cell, scale, alpha); return; }
@@ -136,7 +143,7 @@
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#161021";
-      ctx.fillText(power === 1 ? "\u2194" : power === 2 ? "\u2195" : "\u2736", cx, cy - s * 0.29);
+      ctx.fillText(powerGlyph(power), cx, cy - s * 0.29);
     }
     ctx.globalAlpha = 1;
   }

@@ -5,19 +5,22 @@
   var TEXT = (typeof window !== "undefined" && window.TEXT) ? window.TEXT : {};
 
   var ROCK = TYPES * 10;
-  var SPECIAL_ROW = 1, SPECIAL_COL = 2, SPECIAL_BOMB = 3;
+  var SPECIAL_ROW = 1, SPECIAL_COL = 2, SPECIAL_BOMB = 3,
+    SPECIAL_CROSS = 4, SPECIAL_BLAST = 5, SPECIAL_SUPER = 6,
+    POWER_BLAST = 7, POWER_UPGRADE = 8;
 
   function isRock(t) { return t === ROCK; }
   function isSpecial(t) { return t >= TYPES * 2 && t < ROCK; }
   function typeOf(t) { return (t < 0 || t === ROCK) ? -1 : t % TYPES; }
   function powerOf(t) {
-    if (t >= TYPES * 4) return SPECIAL_BOMB;
-    if (t >= TYPES * 3) return SPECIAL_COL;
-    return SPECIAL_ROW;
+    if (t < TYPES * 2 || t >= ROCK) return -1;
+    return Math.floor(t / TYPES) - 1;
   }
   function makeSpecial(power, type) { return TYPES * (power + 1) + type; }
   function specialFor(len, horizontal) {
-    return len >= 5 ? SPECIAL_BOMB : (horizontal ? SPECIAL_ROW : SPECIAL_COL);
+    if (len >= 6) return SPECIAL_BLAST;
+    if (len >= 5) return SPECIAL_SUPER;
+    return horizontal ? SPECIAL_ROW : SPECIAL_COL;
   }
 
   function randType() { return (Math.random() * TYPES) | 0; }
@@ -128,6 +131,11 @@
         s = spots.splice(idx, 1)[0];
         g[s[0]][s[1]] = ROCK;
       }
+      for (k = 0; k < 2 && spots.length; k++) {
+        idx = (Math.random() * spots.length) | 0;
+        s = spots.splice(idx, 1)[0];
+        g[s[0]][s[1]] = makeSpecial(k === 0 ? POWER_BLAST : POWER_UPGRADE, randType());
+      }
       if (findMarked(g).length === 0 && hasValidMove(g)) return g;
     }
   }
@@ -205,15 +213,28 @@
     };
   }
 
-  function blastArea(r, c, power) {
-    var out = [], i, dr, dc;
+  function blastArea(r, c, power, type) {
+    var out = [], i, rr, cc;
     if (power === SPECIAL_ROW) {
       for (i = 0; i < COLS; i++) out.push([r, i]);
     } else if (power === SPECIAL_COL) {
       for (i = 0; i < ROWS; i++) out.push([i, c]);
-    } else {
-      for (dr = -1; dr <= 1; dr++) {
-        for (dc = -1; dc <= 1; dc++) out.push([r + dr, c + dc]);
+    } else if (power === SPECIAL_CROSS) {
+      for (i = 0; i < COLS; i++) out.push([r, i]);
+      for (i = 0; i < ROWS; i++) out.push([i, c]);
+    } else if (power === SPECIAL_BLAST) {
+      for (rr = r - 2; rr <= r + 2; rr++) {
+        for (cc = c - 2; cc <= c + 2; cc++) out.push([rr, cc]);
+      }
+    } else if (power === SPECIAL_SUPER) {
+      for (rr = 0; rr < ROWS; rr++) {
+        for (cc = 0; cc < COLS; cc++) {
+          if (G.grid[rr][cc] >= 0 && G.grid[rr][cc] !== ROCK && typeOf(G.grid[rr][cc]) === type) out.push([rr, cc]);
+        }
+      }
+    } else if (power === SPECIAL_BOMB) {
+      for (rr = -1; rr <= 1; rr++) {
+        for (cc = -1; cc <= 1; cc++) out.push([r + rr, c + cc]);
       }
     }
     return out;
@@ -232,11 +253,28 @@
       seen.add(key);
       out.push([r, c]);
       if (isSpecial(v)) {
-        area = blastArea(r, c, powerOf(v));
+        area = blastArea(r, c, powerOf(v), typeOf(v));
         for (i = 0; i < area.length; i++) queue.push(area[i]);
       }
     }
     return out;
+  }
+
+  function firePower(from, target, power) {
+    var list = [from.slice()], i, area, tv;
+    if (power === POWER_BLAST) {
+      area = blastArea(target[0], target[1], SPECIAL_BOMB);
+      for (i = 0; i < area.length; i++) list.push(area[i]);
+    } else {
+      tv = G.grid[target[0]][target[1]];
+      if (tv >= 0 && !isRock(tv)) G.grid[target[0]][target[1]] = makeSpecial(SPECIAL_BOMB, typeOf(tv));
+    }
+    emit("power", { power: power, row: from[0], col: from[1], target: target.slice() });
+    G.cascade = 0;
+    G.swapCells = null;
+    G.clears = [];
+    G.pendingBlast = list;
+    resolveChain();
   }
 
   function resolveChain() {
@@ -246,7 +284,7 @@
     if (seed.length === 0) { endTurn(); return; }
     G.cascade++;
     var runs = lineRuns(G.grid);
-    var spawns = [], i, j, L, rc, sc, same;
+    var spawns = [], i, j, L, rc, sc, same, key, parts, hKeys = {}, vKeys = {};
     for (i = 0; i < runs.length; i++) {
       L = runs[i].cells.length;
       if (L < 4) continue;
@@ -261,6 +299,19 @@
         }
       }
       spawns.push({ cell: rc, value: makeSpecial(specialFor(L, runs[i].horizontal), runs[i].type) });
+    }
+    var hKeys = {}, vKeys = {};
+    for (i = 0; i < runs.length; i++) {
+      for (j = 0; j < runs[i].cells.length; j++) {
+        key = runs[i].cells[j][0] + ":" + runs[i].cells[j][1];
+        if (runs[i].horizontal) hKeys[key] = runs[i];
+        else vKeys[key] = runs[i];
+      }
+    }
+    for (key in hKeys) {
+      if (!vKeys[key]) continue;
+      parts = key.split(":");
+      spawns.push({ cell: [+parts[0], +parts[1]], value: makeSpecial(SPECIAL_CROSS, hKeys[key].type) });
     }
     var marked = expandClears(seed);
     var gained = 0;
@@ -360,6 +411,9 @@
       G.sel = cur;
       G.state = "selected";
       emit("select", cur);
+      var sp = powerOf(G.grid[row][col]);
+      if (sp === POWER_BLAST) emit("hint", TEXT.powerBlast);
+      else if (sp === POWER_UPGRADE) emit("hint", TEXT.powerUpgrade);
       return;
     }
     var a = G.sel;
@@ -369,11 +423,20 @@
       emit("select", null);
       return;
     }
+    var ta = G.grid[a[0]][a[1]], tb = G.grid[cur[0]][cur[1]];
+    var tp = powerOf(ta);
+    if (tp === POWER_BLAST || tp === POWER_UPGRADE) {
+      if (isRock(tb)) { G.state = "selected"; emit("hint", TEXT.blocked); return; }
+      if (tp === POWER_UPGRADE && isSpecial(tb)) { G.state = "selected"; emit("hint", TEXT.powerPlain); return; }
+      G.sel = null;
+      G.state = "idle";
+      firePower(a, cur, tp);
+      return;
+    }
     var d = Math.abs(a[0] - cur[0]) + Math.abs(a[1] - cur[1]);
     G.sel = null;
     G.state = "idle";
     if (d !== 1) return;
-    var ta = G.grid[a[0]][a[1]], tb = G.grid[cur[0]][cur[1]];
     if (isRock(tb)) { emit("hint", TEXT.blocked); return; }
     var both = isSpecial(ta) && isSpecial(tb);
     swapCells(G.grid, a, cur);
@@ -422,12 +485,23 @@
     genBoard: genBoard,
     collapse: collapse,
     expandClears: expandClears,
+    blastArea: blastArea,
+    firePower: firePower,
+    specialFor: specialFor,
     resolveChain: resolveChain,
     makeSpecial: makeSpecial,
     isRock: isRock,
     isSpecial: isSpecial,
     typeOf: typeOf,
     powerOf: powerOf,
+    SPECIAL_ROW: SPECIAL_ROW,
+    SPECIAL_COL: SPECIAL_COL,
+    SPECIAL_BOMB: SPECIAL_BOMB,
+    SPECIAL_CROSS: SPECIAL_CROSS,
+    SPECIAL_BLAST: SPECIAL_BLAST,
+    SPECIAL_SUPER: SPECIAL_SUPER,
+    POWER_BLAST: POWER_BLAST,
+    POWER_UPGRADE: POWER_UPGRADE,
     ROCK: ROCK,
     COLS: COLS,
     ROWS: ROWS,
