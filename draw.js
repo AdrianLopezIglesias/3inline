@@ -1,6 +1,8 @@
 "use strict";
 (function () {
-  var BG = ["#d42a1c", "#0a9a4f", "#eaa900", "#d40062", "#6a1fdc", "#37404f", "#0d5fe0"];
+  var BG = ["#d4361f", "#148f3f", "#e0a412", "#c81e5a", "#6a2fc9", "#3f4756", "#1a6fd4"];
+  var INK = "#fff6e6";
+  var EDGE = "rgba(8,10,16,.55)";
 
   function rr(ctx, x, y, w, h, r) {
     ctx.beginPath();
@@ -91,11 +93,12 @@
       ctx.fillStyle = glow;
       ctx.fill();
     }
-    rr(ctx, cx - half, cy - half, half * 2, half * 2, cell * 0.20);
+    ctx.beginPath();
+    ctx.arc(cx, cy, half, 0, Math.PI * 2);
     var body = ctx.createLinearGradient(0, cy - half, 0, cy + half);
-    body.addColorStop(0, shade(BG[type], 0.62));
-    body.addColorStop(0.52, shade(BG[type], 0.44));
-    body.addColorStop(1, shade(BG[type], 0.26));
+    body.addColorStop(0, shade(BG[type], 0.30));
+    body.addColorStop(0.52, BG[type]);
+    body.addColorStop(1, shade(BG[type], -0.34));
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,.50)";
     ctx.shadowBlur = cell * 0.14;
@@ -103,28 +106,30 @@
     ctx.fillStyle = body;
     ctx.fill();
     ctx.restore();
-    rr(ctx, cx - half, cy - half, half * 2, half * 2, cell * 0.20);
+    ctx.beginPath();
+    ctx.arc(cx, cy, half, 0, Math.PI * 2);
     ctx.lineWidth = Math.max(1, cell * 0.028);
-    ctx.strokeStyle = shade(BG[type], -0.58);
+    ctx.strokeStyle = EDGE;
     ctx.stroke();
-    rr(ctx, cx - half * 0.70, cy - half * 0.74, half * 1.40, half * 0.40, half * 0.20);
-    var sheen = ctx.createLinearGradient(0, cy - half * 0.74, 0, cy - half * 0.34);
-    sheen.addColorStop(0, "rgba(255,255,255,.48)");
-    sheen.addColorStop(1, "rgba(255,255,255,.10)");
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, half, 0, Math.PI * 2);
+    ctx.clip();
+    var sheen = ctx.createLinearGradient(0, cy - half, 0, cy);
+    sheen.addColorStop(0, "rgba(255,255,255,.30)");
+    sheen.addColorStop(1, "rgba(255,255,255,0)");
     ctx.fillStyle = sheen;
-    ctx.fill();
-    rr(ctx, cx - half * 0.84, cy + half * 0.62, half * 1.68, half * 0.20, half * 0.10);
-    ctx.fillStyle = "rgba(255,255,255,.22)";
-    ctx.fill();
+    ctx.fillRect(cx - half, cy - half, half * 2, half);
+    ctx.restore();
     symbolPath(ctx, type, cx, cy + cell * 0.01, s * 0.27);
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,.45)";
     ctx.shadowBlur = cell * 0.07;
-    ctx.fillStyle = BG[type];
+    ctx.fillStyle = INK;
     ctx.fill();
     ctx.restore();
     ctx.lineWidth = Math.max(1, cell * 0.015);
-    ctx.strokeStyle = shade(BG[type], -0.40);
+    ctx.strokeStyle = "rgba(10,8,18,.40)";
     ctx.stroke();
     if (special) {
       var power = G.powerOf(value);
@@ -151,7 +156,8 @@
     var pad = cell * 0.07;
     var cx = x + cell / 2, cy = y + cell / 2;
     ctx.globalAlpha = (alpha == null ? 1 : alpha);
-    rr(ctx, cx - s / 2 + pad, cy - s / 2 + pad, s - pad * 2, s - pad * 2, cell * 0.14);
+    ctx.beginPath();
+    ctx.arc(cx, cy, s / 2 - pad, 0, Math.PI * 2);
     var stone = ctx.createLinearGradient(0, cy - s / 2, 0, cy + s / 2);
     stone.addColorStop(0, "#4b5365");
     stone.addColorStop(0.55, "#333a49");
