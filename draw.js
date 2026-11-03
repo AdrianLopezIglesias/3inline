@@ -1,6 +1,6 @@
 "use strict";
 (function () {
-  var BG = ["#d4361f", "#148f3f", "#e0a412", "#c81e5a", "#6a2fc9", "#3f4756", "#1a6fd4"];
+  var BG = ["#8a4638", "#2d6a4f", "#97703a", "#974557", "#5c4270", "#40505e", "#3f5e7a"];
   var INK = "#fff6e6";
   var EDGE = "rgba(8,10,16,.55)";
 
@@ -111,16 +111,6 @@
     ctx.lineWidth = Math.max(1, cell * 0.028);
     ctx.strokeStyle = EDGE;
     ctx.stroke();
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, cy, half, 0, Math.PI * 2);
-    ctx.clip();
-    var sheen = ctx.createLinearGradient(0, cy - half, 0, cy);
-    sheen.addColorStop(0, "rgba(255,255,255,.30)");
-    sheen.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = sheen;
-    ctx.fillRect(cx - half, cy - half, half * 2, half);
-    ctx.restore();
     symbolPath(ctx, type, cx, cy + cell * 0.01, s * 0.27);
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,.45)";
