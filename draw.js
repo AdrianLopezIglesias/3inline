@@ -1,8 +1,6 @@
 "use strict";
 (function () {
-  var BG = ["#d4361f", "#148f3f", "#e0a412", "#c81e5a", "#6a2fc9", "#3f4756", "#1a6fd4"];
-  var INK = "#fff6e6";
-  var EDGE = "rgba(8,10,16,.55)";
+  var BG = ["#d42a1c", "#0a9a4f", "#eaa900", "#d40062", "#6a1fdc", "#37404f", "#0d5fe0"];
 
   function rr(ctx, x, y, w, h, r) {
     ctx.beginPath();
@@ -95,9 +93,9 @@
     }
     rr(ctx, cx - half, cy - half, half * 2, half * 2, cell * 0.20);
     var body = ctx.createLinearGradient(0, cy - half, 0, cy + half);
-    body.addColorStop(0, shade(BG[type], 0.30));
-    body.addColorStop(0.52, BG[type]);
-    body.addColorStop(1, shade(BG[type], -0.34));
+    body.addColorStop(0, shade(BG[type], 0.62));
+    body.addColorStop(0.52, shade(BG[type], 0.44));
+    body.addColorStop(1, shade(BG[type], 0.26));
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,.50)";
     ctx.shadowBlur = cell * 0.14;
@@ -107,23 +105,26 @@
     ctx.restore();
     rr(ctx, cx - half, cy - half, half * 2, half * 2, cell * 0.20);
     ctx.lineWidth = Math.max(1, cell * 0.028);
-    ctx.strokeStyle = EDGE;
+    ctx.strokeStyle = shade(BG[type], -0.58);
     ctx.stroke();
-    rr(ctx, cx - half, cy - half, half * 2, half * 0.52, cell * 0.20);
-    var sheen = ctx.createLinearGradient(0, cy - half, 0, cy - half + half * 0.52);
-    sheen.addColorStop(0, "rgba(255,255,255,.30)");
-    sheen.addColorStop(1, "rgba(255,255,255,0)");
+    rr(ctx, cx - half * 0.70, cy - half * 0.74, half * 1.40, half * 0.40, half * 0.20);
+    var sheen = ctx.createLinearGradient(0, cy - half * 0.74, 0, cy - half * 0.34);
+    sheen.addColorStop(0, "rgba(255,255,255,.48)");
+    sheen.addColorStop(1, "rgba(255,255,255,.10)");
     ctx.fillStyle = sheen;
+    ctx.fill();
+    rr(ctx, cx - half * 0.84, cy + half * 0.62, half * 1.68, half * 0.20, half * 0.10);
+    ctx.fillStyle = "rgba(255,255,255,.22)";
     ctx.fill();
     symbolPath(ctx, type, cx, cy + cell * 0.01, s * 0.27);
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,.45)";
     ctx.shadowBlur = cell * 0.07;
-    ctx.fillStyle = INK;
+    ctx.fillStyle = BG[type];
     ctx.fill();
     ctx.restore();
     ctx.lineWidth = Math.max(1, cell * 0.015);
-    ctx.strokeStyle = "rgba(10,8,18,.40)";
+    ctx.strokeStyle = shade(BG[type], -0.40);
     ctx.stroke();
     if (special) {
       var power = G.powerOf(value);
