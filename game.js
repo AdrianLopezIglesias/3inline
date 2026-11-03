@@ -527,6 +527,7 @@
   G.isRock = isRock;
   G.isSpecial = isSpecial;
   G.typeOf = typeOf;
+  G.symbolOf = symbolOf;
   G.powerOf = powerOf;
   if (typeof window !== "undefined") window.Game = G;
   if (typeof module !== "undefined" && module.exports) module.exports = G;
