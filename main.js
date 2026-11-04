@@ -99,7 +99,6 @@
     var cell = ptrToCell(e);
     if (!cell) return;
     drag.cell = cell;
-    window.Game.hover = [cell[1], cell[0]];
   });
 
   canvas.addEventListener("pointerup", function (e) {
@@ -110,14 +109,15 @@
     window.Game.dragDisp = null;
     var end = ptrToCell(e);
     if (!end) return;
-    if (!d.moved || (end[0] === d.start[0] && end[1] === d.start[1])) {
+    if (!d.moved) {
       window.Game.tap(end[0], end[1]);
+      return;
+    }
+    if (end[0] === d.start[0] && end[1] === d.start[1]) {
       return;
     }
     if (isAdjacent(d.start, end)) {
       dragSwap(d.start, end);
-    } else {
-      window.Game.tap(end[0], end[1]);
     }
   });
 
