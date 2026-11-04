@@ -87,38 +87,6 @@
     ctx.globalAlpha = 1;
   };
 
-  /* ------------------------------------------------------------------ */
-  /*  Sparkle: a star-shaped particle that winks and drifts              */
-  /* ------------------------------------------------------------------ */
-  function Sparkle(spec) {
-    this.x = spec.x; this.y = spec.y;
-    this.vx = spec.vx || 0; this.vy = spec.vy || 0;
-    this.life = spec.life;
-    this.age = 0;
-    this.size = spec.size || 3;
-    this.col = spec.col || [255, 255, 200];
-    this.t = 0;
-    this.done = false;
-  }
-  Sparkle.prototype.update = function (dt) {
-    this.t += dt; this.age += dt;
-    if (this.age >= this.life) { this.done = true; return; }
-    this.x += this.vx * dt;
-    this.y += this.vy * dt;
-  };
-  Sparkle.prototype.draw = function (ctx) {
-    if (this.done) return;
-    var progress = this.age / this.life;
-    var a = (1 - easeOutCubic(progress)) * Math.abs(Math.sin(this.t * 8 + this.x));
-    var s = this.size * (1 - progress * 0.5);
-    if (a < 0.05 || s < 0.5) return;
-    ctx.globalAlpha = a;
-    ctx.fillStyle = "rgb(" + this.col[0] + "," + this.col[1] + "," + this.col[2] + ")";
-    // small cross
-    ctx.fillRect(this.x - s / 2, this.y - s * 1.5, s, s * 3);
-    ctx.fillRect(this.x - s * 1.5, this.y - s / 2, s * 3, s);
-    ctx.globalAlpha = 1;
-  };
 
   /* ------------------------------------------------------------------ */
   /*  Ring snap: a ring that expands, widens, then fades                 */
@@ -230,54 +198,11 @@
 
     /* event-driven factories  */
     clearBurst: function (x, y, type) {
-      type = type || 0;
-      var rampColors = TYPE_RAMPS;
-      // main burst
-      FX.active.push(new Burst({
-        x: x, y: y, count: 130, speedMin: 70, speedMax: 320,
-        lifeMin: 0.35, lifeMax: 0.9, sizeMin: 3, sizeMax: 10,
-        ramp: rampColors[type % 7], gravity: 35, drag: 0.9, alphaMul: 1.6,
-      }));
-      FX.active.push(new Embers({
-        x: x, y: y, count: 65, speedMin: 25, speedMax: 80, spread: 24,
-        lifeMin: 0.5, lifeMax: 1.1, sizeMin: 2.5, sizeMax: 6.5,
-        ramp: rampColors[type % 7].slice().reverse(),
-        rise: 40, drag: 0.6, alphaMul: 1.1,
-      }));
-      // sparkle twins
-      FX.active.push(new Sparkle({ x: x, y: y, vx: 90, vy: -70, life: 0.6, size: 5.5, col: [255, 255, 240] }));
-      FX.active.push(new Sparkle({ x: x, y: y, vx: -85, vy: -62, life: 0.55, size: 5, col: [255, 255, 240] }));
-      // ring
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: 90, life: 0.6, col: rampColors[type % 7][2] }));
+      FX.lib("hitSpark", x, y, { seed: 4 + (type || 0) });
     },
 
     specialClear: function (x, y, type) {
-      var rampColors = TYPE_RAMPS;
-      // bigger burst for specials
-      FX.active.push(new Burst({
-        x: x, y: y, count: 200, speedMin: 100, speedMax: 420,
-        lifeMin: 0.45, lifeMax: 1.1, sizeMin: 4, sizeMax: 12,
-        ramp: rampColors[type % 7], gravity: 25, drag: 0.5, alphaMul: 1.6,
-      }));
-      FX.active.push(new Embers({
-        x: x, y: y, count: 110, speedMin: 35, speedMax: 110, spread: 38,
-        lifeMin: 0.65, lifeMax: 1.4, sizeMin: 3, sizeMax: 7.5,
-        ramp: rampColors[type % 7].slice().reverse(),
-        rise: 55, drag: 0.4, alphaMul: 1.1,
-      }));
-      // radial sparkles
-      var i, a;
-      for (i = 0; i < 18; i++) {
-        a = (i / 18) * Math.PI * 2;
-        FX.active.push(new Sparkle({
-          x: x, y: y, vx: Math.cos(a) * 160, vy: Math.sin(a) * 160,
-          life: 0.55 + Math.random() * 0.4, size: 5 + Math.random() * 4,
-          col: [255, 255, 240]
-        }));
-      }
-      // double ring
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: 120, life: 0.45, col: rampColors[type % 7][1] }));
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: 80, life: 0.65, col: [255, 255, 255] }));
+      FX.lib("cartoonPow", x, y, { seed: 5 + (type || 0) });
     },
 
     cascadeFlash: function (x, y) {
@@ -298,20 +223,7 @@
     },
 
     powerBlast: function (x, y, type) {
-      var rampColors = TYPE_RAMPS;
-      FX.active.push(new Burst({
-        x: x, y: y, count: 220, speedMin: 120, speedMax: 520,
-        lifeMin: 0.4, lifeMax: 1.0, sizeMin: 4, sizeMax: 13,
-        ramp: rampColors[type % 7], gravity: 20, drag: 0.45, alphaMul: 1.7,
-      }));
-      FX.active.push(new Embers({
-        x: x, y: y, count: 120, speedMin: 40, speedMax: 130, spread: 44,
-        lifeMin: 0.6, lifeMax: 1.3, sizeMin: 3, sizeMax: 8,
-        ramp: rampColors[type % 7].slice().reverse(),
-        rise: 60, drag: 0.35, alphaMul: 1.2,
-      }));
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: 230, life: 0.5, col: [255, 255, 255] }));
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: 170, life: 0.7, col: rampColors[type % 7][1] }));
+      FX.lib("smallExplosion", x, y, { seed: 7 + (type || 0) });
     },
 
     /* frame hooks */
@@ -327,6 +239,69 @@
       var i;
       for (i = 0; i < this.active.length; i++) this.active[i].draw(ctx);
     },
+  };
+
+  /* ------------------------------------------------------------------ */
+  /*  Vendored pixelfx effects (see pixelfx-vendor.js)                   */
+  /* ------------------------------------------------------------------ */
+  /*  The library paints each burst into its own pixel frame, so a hit
+      gets a scratch canvas of the effect's size and is blitted onto the
+      game canvas with smoothing off, its origin on the tile.  LIB_LOOK
+      is how wide each effect should read, in tiles. */
+
+  var LIB_LOOK = { hitSpark: 1.6, cartoonPow: 2.2, smallExplosion: 4.2 };
+  var libScratch = {};
+
+  function libScratchFor(w, h, ox, oy) {
+    var key = w + "x" + h + "@" + ox + "," + oy;
+    var s = libScratch[key];
+    if (!s) {
+      var c = document.createElement("canvas");
+      c.width = w;
+      c.height = h;
+      s = libScratch[key] = {
+        canvas: c,
+        ctx: c.getContext("2d"),
+        img: new ImageData(w, h),
+        frame: window.PixelFXLIB.createFrame(w, h, ox, oy),
+      };
+    }
+    return s;
+  }
+
+  function LibHit(name, x, y, opts) {
+    var mod = window.PixelFXLIB.effects[name];
+    var g = window.Game && window.Game.geom;
+    var cell = (g && g.cell) || 52;
+    this.x = x;
+    this.y = y;
+    this.w = mod.meta.size[0];
+    this.h = mod.meta.size[1];
+    this.ox = mod.meta.origin[0];
+    this.oy = mod.meta.origin[1];
+    this.k = Math.max(0.25, (cell * (LIB_LOOK[name] || 2)) / this.w);
+    this.fx = window.PixelFXLIB.createFx(mod, opts || {});
+    this.done = false;
+  }
+  LibHit.prototype.update = function (dt) {
+    this.fx.update(dt);
+    if (this.fx.done()) this.done = true;
+  };
+  LibHit.prototype.draw = function (ctx) {
+    var s = libScratchFor(this.w, this.h, this.ox, this.oy);
+    window.PixelFXLIB.clearFrame(s.frame);
+    this.fx.draw(s.frame);
+    window.PixelFXLIB.composite(s.frame, s.img.data, null);
+    s.ctx.putImageData(s.img, 0, 0);
+    var k = this.k, smooth = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(s.canvas, this.x - this.ox * k, this.y - this.oy * k, this.w * k, this.h * k);
+    ctx.imageSmoothingEnabled = smooth;
+  };
+
+  FX.lib = function (name, x, y, opts) {
+    if (!window.PixelFXLIB || !window.PixelFXLIB.effects[name]) return;
+    FX.active.push(new LibHit(name, x, y, opts));
   };
 
   window.PixelFX = FX;

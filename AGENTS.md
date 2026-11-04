@@ -32,11 +32,12 @@ collapse/refill ordering.
 
 ## stack
 
-- Plain HTML/CSS/JS. No frameworks, no bundler, no external dependencies.
+- Plain HTML/CSS/JS. No frameworks, no bundler, no install step; pixelfx (MIT) is vendored
+  into `pixelfx-vendor.js` as a classic script rather than added as a dependency.
 - One canvas (2D) renders the board; DOM elements show level/score/moves, goal,
   cascade flash, and the win/lose overlay.
-- Classic scripts loaded in order (text.js, stage.js, game.js, draw.js, main.js)
-  so the page also works from `file://`.
+- Classic scripts loaded in order (text.js, stage.js, game.js, pixelfx-vendor.js, fx.js,
+  draw.js, main.js) so the page also works from `file://`.
 
 ## layout
 
@@ -46,6 +47,8 @@ collapse/refill ordering.
 - `stage.js` — canvas + device-pixel buffer, resize, the frame loop (clamped dt).
 - `game.js` — board model, pure rules, and the game state machine.
 - `draw.js` — canvas rendering (tiles, swap/clear/drop animation, selection ring).
+- `fx.js` — board effects: hand-rolled cascade/ring bursts plus the vendored pixelfx hits, blitted from pixel frames.
+- `pixelfx-vendor.js` — the pixelfx engine and three of its effects generated into one classic script (`window.PixelFXLIB`); regenerate, do not hand-edit.
 - `main.js` — pointer/tap input and DOM wiring.
 
 ## conventions
