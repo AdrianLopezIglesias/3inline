@@ -317,19 +317,19 @@
       x: x, y: y, count: Math.round(170 * power),
       speedMin: 90 * power, speedMax: 380 * Math.sqrt(power),
       lifeMin: 0.24, lifeMax: 0.3 + 0.1 * power,
-      sizeMin: 2.2 * power, sizeMax: 5.5 * power,
+      sizeMin: 4.4 * power, sizeMax: 11 * power,
       ramp: rampColors, gravity: 30, drag: 1.2, alphaMul: 1.9,
     }));
     FX.active.push(new Embers({
       x: x, y: y, count: Math.round(90 * power),
       speedMin: 30, speedMax: 100, spread: 30 * power,
       lifeMin: 0.22, lifeMax: 0.3 + 0.09 * power,
-      sizeMin: 2, sizeMax: 4 * power,
+      sizeMin: 4, sizeMax: 8 * power,
       ramp: rampColors.slice().reverse(),
       rise: 60, drag: 0.9, alphaMul: 1.35,
     }));
-    FX.active.push(new RingSnap({ x: x, y: y, rMax: 58 * power, life: 0.3 + 0.06 * power, col: rampColors[1] }));
-    FX.active.push(new RingSnap({ x: x, y: y, rMax: 40 * power, life: 0.36 + 0.06 * power, col: [255, 255, 255] }));
+    FX.active.push(new RingSnap({ x: x, y: y, rMax: 150 * power, life: 0.3 + 0.06 * power, col: rampColors[1] }));
+    FX.active.push(new RingSnap({ x: x, y: y, rMax: 105 * power, life: 0.36 + 0.06 * power, col: [255, 255, 255] }));
   }
 
   window.PixelFX = FX;
