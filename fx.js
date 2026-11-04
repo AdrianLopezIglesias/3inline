@@ -184,7 +184,8 @@
   /*  Effects catalog                                                    */
   /* ------------------------------------------------------------------ */
   /* particle ramps per gem type (matched to the tile colors in draw.js) */
-  var TYPE_RAMPS = [
+  var CFG = window.FXConfig || {};
+  var TYPE_RAMPS = CFG.typeRamps || [
     [[255, 236, 205], [255, 150, 60], [212, 54, 31], [130, 24, 8], [46, 8, 2]],
     [[214, 255, 228], [70, 220, 130], [20, 143, 63], [8, 74, 32], [2, 26, 10]],
     [[255, 250, 205], [255, 214, 80], [224, 164, 18], [130, 88, 6], [40, 26, 2]],
@@ -198,36 +199,36 @@
 
     /* event-driven factories  */
     clearBurst: function (x, y, type) {
-      FX.lib("hitSpark", x, y, { seed: 4 + (type || 0), light: 1.8 });
-      kick(x, y, type, 1.15);
+      FX.lib("hitSpark", x, y, { seed: 4 + (type || 0), light: CFG.libLight.hitSpark });
+      kick(x, y, type, CFG.kick.power.clear);
     },
 
     specialClear: function (x, y, type) {
-      FX.lib("cartoonPow", x, y, { seed: 5 + (type || 0), light: 2.2 });
-      kick(x, y, type, 1.9);
+      FX.lib("cartoonPow", x, y, { seed: 5 + (type || 0), light: CFG.libLight.cartoonPow });
+      kick(x, y, type, CFG.kick.power.special);
     },
 
     cascadeFlash: function (x, y) {
+      var c = CFG.cascade, gs = CFG.gravitySpeed || 1;
       FX.active.push(new Burst({
-        x: x, y: y, count: 300, speedMin: 130, speedMax: 560,
-        lifeMin: 0.5, lifeMax: 1.3, sizeMin: 5, sizeMax: 15,
-        ramp: [[255, 255, 220], [255, 240, 120], [255, 200, 80], [255, 160, 40], [200, 100, 20]],
-        gravity: 24, drag: 0.4, alphaMul: 2.0,
+        x: x, y: y, count: c.burst.count, speedMin: c.burst.speedMin, speedMax: c.burst.speedMax,
+        lifeMin: c.burst.lifeMin, lifeMax: c.burst.lifeMax, sizeMin: c.burst.sizeMin, sizeMax: c.burst.sizeMax,
+        ramp: c.burst.ramp, gravity: c.burst.gravity * gs, drag: c.burst.drag, alphaMul: c.burst.alphaMul,
       }));
       FX.active.push(new Embers({
-        x: x, y: y, count: 150, speedMin: 35, speedMax: 120, spread: 46,
-        lifeMin: 0.7, lifeMax: 1.6, sizeMin: 3, sizeMax: 9,
-        ramp: [[255, 255, 220], [255, 230, 120], [255, 190, 80], [220, 130, 40], [120, 60, 20]],
-        rise: 60, drag: 0.4, alphaMul: 1.4,
+        x: x, y: y, count: c.embers.count, speedMin: c.embers.speedMin, speedMax: c.embers.speedMax, spread: c.embers.spread,
+        lifeMin: c.embers.lifeMin, lifeMax: c.embers.lifeMax, sizeMin: c.embers.sizeMin, sizeMax: c.embers.sizeMax,
+        ramp: c.embers.ramp, rise: c.embers.rise, drag: c.embers.drag, alphaMul: c.embers.alphaMul,
       }));
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: 190, life: 0.5, col: [255, 230, 100] }));
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: 130, life: 0.7, col: [255, 255, 255] }));
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: 70, life: 0.85, col: [255, 200, 120] }));
+      for (var i = 0; i < c.rings.length; i++) {
+        var rg = c.rings[i];
+        FX.active.push(new RingSnap({ x: x, y: y, rMax: rg.rMax, life: rg.life, col: rg.col }));
+      }
     },
 
     powerBlast: function (x, y, type) {
-      FX.lib("smallExplosion", x, y, { seed: 7 + (type || 0), light: 2.4 });
-      kick(x, y, type, 2.8);
+      FX.lib("smallExplosion", x, y, { seed: 7 + (type || 0), light: CFG.libLight.smallExplosion });
+      kick(x, y, type, CFG.kick.power.blast);
     },
 
     /* frame hooks */
@@ -253,7 +254,7 @@
       game canvas with smoothing off, its origin on the tile.  LIB_LOOK
       is how wide each effect should read, in tiles. */
 
-  var LIB_LOOK = { hitSpark: 2.6, cartoonPow: 3.4, smallExplosion: 6.2 };
+  var LIB_LOOK = CFG.libLook;
   var libScratch = {};
 
   function libScratchFor(w, h, ox, oy) {
@@ -312,24 +313,28 @@
       match, 3 a power move.  More, faster, bigger and longer the higher
       it goes, so every clear reads loud and keeps throwing debris. */
   function kick(x, y, type, power) {
-    var rampColors = TYPE_RAMPS[(type || 0) % 7];
+    var k = CFG.kick, rampColors = TYPE_RAMPS[(type || 0) % 7];
+    var b = k.burst, e = k.embers, gs = CFG.gravitySpeed || 1;
     FX.active.push(new Burst({
-      x: x, y: y, count: Math.round(170 * power),
-      speedMin: 90 * power, speedMax: 380 * Math.sqrt(power),
-      lifeMin: 0.24, lifeMax: 0.3 + 0.1 * power,
-      sizeMin: 4.4 * power, sizeMax: 11 * power,
-      ramp: rampColors, gravity: 30, drag: 1.2, alphaMul: 1.9,
+      x: x, y: y, count: Math.round(b.count * power),
+      speedMin: b.speedMin * power, speedMax: b.speedMax * Math.sqrt(power),
+      lifeMin: b.lifeMin, lifeMax: b.lifeMax + b.lifeGrow * power,
+      sizeMin: b.sizeMin * power, sizeMax: b.sizeMax * power,
+      ramp: rampColors, gravity: b.gravity * gs, drag: b.drag, alphaMul: b.alphaMul,
     }));
     FX.active.push(new Embers({
-      x: x, y: y, count: Math.round(90 * power),
-      speedMin: 30, speedMax: 100, spread: 30 * power,
-      lifeMin: 0.22, lifeMax: 0.3 + 0.09 * power,
-      sizeMin: 4, sizeMax: 8 * power,
+      x: x, y: y, count: Math.round(e.count * power),
+      speedMin: e.speedMin, speedMax: e.speedMax, spread: e.spread * power,
+      lifeMin: e.lifeMin, lifeMax: e.lifeMax + e.lifeGrow * power,
+      sizeMin: e.sizeMin, sizeMax: e.sizeMax * power,
       ramp: rampColors.slice().reverse(),
-      rise: 60, drag: 0.9, alphaMul: 1.35,
+      rise: e.rise, drag: e.drag, alphaMul: e.alphaMul,
     }));
-    FX.active.push(new RingSnap({ x: x, y: y, rMax: 150 * power, life: 0.3 + 0.06 * power, col: rampColors[1] }));
-    FX.active.push(new RingSnap({ x: x, y: y, rMax: 105 * power, life: 0.36 + 0.06 * power, col: [255, 255, 255] }));
+    for (var i = 0; i < k.rings.length; i++) {
+      var rg = k.rings[i];
+      var col = rg.col === "type" ? rampColors[1] : rg.col;
+      FX.active.push(new RingSnap({ x: x, y: y, rMax: rg.rMax * power, life: rg.life + rg.lifeGrow * power, col: col }));
+    }
   }
 
   window.PixelFX = FX;

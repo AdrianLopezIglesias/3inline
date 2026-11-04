@@ -36,8 +36,9 @@ collapse/refill ordering.
   into `pixelfx-vendor.js` as a classic script rather than added as a dependency.
 - One canvas (2D) renders the board; DOM elements show level/score/moves, goal,
   cascade flash, and the win/lose overlay.
-- Classic scripts loaded in order (text.js, stage.js, game.js, pixelfx-vendor.js, fx.js,
-  draw.js, main.js) so the page also works from `file://`.
+- Classic scripts loaded in order (text.js, stage.js, game.js, fx-config.js, pixelfx-vendor.js, fx.js,
+  draw.js, main.js) so the page also works from `file://`. `fx-config.js` must load before `fx.js`
+  and `draw.js`, which read it.
 
 ## layout
 
@@ -48,6 +49,7 @@ collapse/refill ordering.
 - `game.js` — board model, pure rules, and the game state machine.
 - `draw.js` — canvas rendering (tiles, swap/clear/drop animation, selection ring).
 - `fx.js` — board effects: hand-rolled cascade/ring bursts plus the vendored pixelfx hits, blitted from pixel frames.
+- `fx-config.js` — effect tuning in one place (kick/cascade specs, library widths, `gravitySpeed`, `gemsBounce`); loaded before `fx.js` and `draw.js`, which read it.
 - `pixelfx-vendor.js` — the pixelfx engine and three of its effects generated into one classic script (`window.PixelFXLIB`); regenerate, do not hand-edit.
 - `main.js` — pointer/tap input and DOM wiring.
 

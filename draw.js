@@ -284,7 +284,7 @@
       for (i = 0; i < G.flight.length; i++) {
         var fl = G.flight[i];
         var q = Math.min(1, (G.now() - fl.t0) / fl.dur);
-        var qq = easeOutBounce(q);
+        var qq = q + (easeOutBounce(q) - q) * ((window.FXConfig && window.FXConfig.gemsBounce) || 0);
         var yy = fl.y0 + (fl.y1 - fl.y0) * qq;
         var dropScale = 1 + 0.08 * Math.sin(qq * Math.PI);
         drawTile(ctx, fl.type, pxX(fl.col), yy, cell, dropScale, 1);
