@@ -281,17 +281,22 @@
       }
     }
     if (G.flight) {
+      var FS = (window.FXConfig && window.FXConfig.fall) || {};
+      var landAt = FS.land != null ? FS.land : 0.82;
+      var squashAmp = FS.squash != null ? FS.squash : 0.22;
+      var squashDecay = FS.decay != null ? FS.decay : 2.6;
+      var squashCycles = FS.cycles != null ? FS.cycles : 2;
       for (i = 0; i < G.flight.length; i++) {
         var fl = G.flight[i];
         var q = Math.min(1, (G.now() - fl.t0) / fl.dur);
-        /* gravity: from rest to the floor in the first 82% of the fall */
-        var fall = Math.min(1, q / 0.82);
+        /* gravity: from rest to the floor in the first part of the drop */
+        var fall = Math.min(1, q / landAt);
         var yy = fl.y0 + (fl.y1 - fl.y0) * fall * fall;
-        /* then squash on the floor and rebound once */
+        /* then a soft cushion: flatten, recover, and settle with one faint rebound */
         var sy = 1, sx = 1;
-        if (q > 0.82) {
-          var u = (q - 0.82) / 0.18;
-          var squash = Math.exp(-4 * u) * Math.cos(u * Math.PI * 2) * 0.3;
+        if (q > landAt) {
+          var u = (q - landAt) / (1 - landAt);
+          var squash = squashAmp * Math.sin(Math.PI * squashCycles * u) * Math.exp(-squashDecay * u);
           sy = 1 - squash;
           sx = 1 + squash * 0.7;
         }
@@ -305,6 +310,7 @@
         delete rest[fl.row + ":" + fl.col];
       }
     }
+
 
     for (key in rest) {
       var parts = key.split(":");
