@@ -283,34 +283,38 @@
     if (G.flight) {
       var FS = (window.FXConfig && window.FXConfig.fall) || {};
       var landAt = FS.land != null ? FS.land : 0.82;
-      var squashAmp = FS.squash != null ? FS.squash : 0.22;
-      var squashDecay = FS.decay != null ? FS.decay : 2.6;
-      var squashCycles = FS.cycles != null ? FS.cycles : 2;
+      var squashAmp = FS.squash != null ? FS.squash : 0.5;
+      var bulge = FS.bulge != null ? FS.bulge : 0.75;
+      var squashDecay = FS.decay != null ? FS.decay : 1.8;
+      var squashCycles = FS.cycles != null ? FS.cycles : 3;
+      var leanAmp = FS.lean != null ? FS.lean : 0.1;
       for (i = 0; i < G.flight.length; i++) {
         var fl = G.flight[i];
         var q = Math.min(1, (G.now() - fl.t0) / fl.dur);
         /* gravity: from rest to the floor in the first part of the drop */
         var fall = Math.min(1, q / landAt);
         var yy = fl.y0 + (fl.y1 - fl.y0) * fall * fall;
-        /* then a soft cushion: flatten, recover, and settle with one faint rebound */
-        var sy = 1, sx = 1;
+        /* then jelly: flatten wide, slosh through a few damped wobbles, settle */
+        var sy = 1, sx = 1, lean = 0;
         if (q > landAt) {
           var u = (q - landAt) / (1 - landAt);
-          var squash = squashAmp * Math.sin(Math.PI * squashCycles * u) * Math.exp(-squashDecay * u);
+          var wob = Math.sin(Math.PI * squashCycles * u) * Math.exp(-squashDecay * u);
+          var squash = squashAmp * wob;
           sy = 1 - squash;
-          sx = 1 + squash * 0.7;
+          sx = 1 + squash * bulge;
+          lean = leanAmp * wob;
         }
         var fcx = pxX(fl.col) + cell / 2, fby = yy + cell;
         ctx.save();
         ctx.translate(fcx, fby);
         ctx.scale(sx, sy);
+        if (lean) ctx.transform(1, 0, lean, 1, 0, 0);
         ctx.translate(-fcx, -fby);
         drawTile(ctx, fl.type, pxX(fl.col), yy, cell, 1, 1);
         ctx.restore();
         delete rest[fl.row + ":" + fl.col];
       }
     }
-
 
     for (key in rest) {
       var parts = key.split(":");
