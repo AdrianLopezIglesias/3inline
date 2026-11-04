@@ -43,18 +43,18 @@
        below are for power 1 and scale with power. */
     kick: {
       burst: {
-        count: 170,
-        speedMin: 90, speedMax: 380,
-        lifeMin: 0.24, lifeMax: 0.3, lifeGrow: 0.1,
-        sizeMin: 6.6, sizeMax: 16.5,
-        gravity: 30, drag: 1.2, alphaMul: 1.9,
+        count: 280,
+        speedMin: 140, speedMax: 620,
+        lifeMin: 0.36, lifeMax: 0.45, lifeGrow: 0.1,
+        sizeMin: 4.4, sizeMax: 11,
+        gravity: 30, drag: 0.7, alphaMul: 1.9,
       },
       embers: {
-        count: 90,
-        speedMin: 30, speedMax: 100, spread: 30,
-        lifeMin: 0.22, lifeMax: 0.3, lifeGrow: 0.09,
-        sizeMin: 6, sizeMax: 12,
-        rise: 60, drag: 0.9, alphaMul: 1.35,
+        count: 150,
+        speedMin: 60, speedMax: 180, spread: 30,
+        lifeMin: 0.34, lifeMax: 0.45, lifeGrow: 0.09,
+        sizeMin: 4, sizeMax: 8,
+        rise: 60, drag: 0.5, alphaMul: 1.35,
       },
       rings: [
         { rMax: 190, life: 0.3, lifeGrow: 0.06, col: "type" },
