@@ -46,14 +46,14 @@
         count: 280,
         speedMin: 80, speedMax: 340,
         lifeMin: 0.45, lifeMax: 0.56, lifeGrow: 0.1,
-        sizeMin: 3.2, sizeMax: 8,
+        sizeMin: 4.8, sizeMax: 12,
         gravity: 30, drag: 0.7, alphaMul: 1.9,
       },
       embers: {
         count: 150,
         speedMin: 35, speedMax: 100, spread: 30,
         lifeMin: 0.43, lifeMax: 0.56, lifeGrow: 0.09,
-        sizeMin: 3, sizeMax: 6,
+        sizeMin: 4.5, sizeMax: 9,
         rise: 60, drag: 0.5, alphaMul: 1.35,
       },
       rings: [
