@@ -1,6 +1,6 @@
 "use strict";
 (function () {
-  var BG = ["#b8472c", "#2d6a4f", "#c08a1e", "#b01030", "#7a34b4", "#7d93b3", "#123a70"];
+  var BG = ["#b8472c", "#2d6a4f", "#c08a1e", "#8e1a24", "#7a34b4", "#7d93b3", "#123a70"];
   var INK = "#fff6e6";
   var EDGE = "rgba(8,10,16,.55)";
 
@@ -304,11 +304,12 @@
       var waveWaves = FS.waves != null ? FS.waves : 1.1;
       var waveTravel = FS.travel != null ? FS.travel : 1.1;
       var waveDecay = FS.decay != null ? FS.decay : 1.6;
-      var squashAmp = FS.squashAmp != null ? FS.squashAmp : 0.16;
-      var squashBounce = FS.squashBounce != null ? FS.squashBounce : 1.7;
-      var squashDecay = FS.squashDecay != null ? FS.squashDecay : 1.8;
-      var bulge = FS.bulge != null ? FS.bulge : 0.22;
-      var strips = FS.strips != null ? FS.strips : 6;
+      var squashAmp = FS.squashAmp != null ? FS.squashAmp : 0.42;
+      var squashBounce = FS.squashBounce != null ? FS.squashBounce : 1.2;
+      var squashDecay = FS.squashDecay != null ? FS.squashDecay : 2.6;
+      var bulge = FS.bulge != null ? FS.bulge : 0.35;
+      var heightTaper = FS.heightTaper != null ? FS.heightTaper : 0.7;
+      var strips = FS.strips != null ? FS.strips : 10;
       for (i = 0; i < G.flight.length; i++) {
         var fl = G.flight[i];
         var q = Math.min(1, (G.now() - fl.t0) / fl.dur);
@@ -316,20 +317,21 @@
         var fall = Math.min(1, q / landAt);
         var yy = fl.y0 + (fl.y1 - fl.y0) * fall * fall;
         var tx = pxX(fl.col);
-        /* soft-body landing: the gem squashes against the floor (shorter,
-           wider) and springs back with a damped wobble (taller, thinner),
-           while the lateral wave ripples as the secondary wobble. Bands are
-           bottom-locked so the footprint stays put. */
-        var ampl = 0, u = 0, sq = 0;
+        /* soft-body landing: the gem arrives as a jelly mass. On impact it is
+           squeezed flat — the bands nearest the floor most — and spreads
+           wider, then wobbles back through a stretch, damped, while a lateral
+           ripple runs up it. Bands are laid down from the floor up so the
+           footprint stays put. */
+        var u = 0, comp = 0, ampl = 0;
         if (q > landAt) {
           u = (q - landAt) / (1 - landAt);
-          var soft = Math.min(1, u * 12);
-          ampl = waveAmp * cell * Math.exp(-waveDecay * u) * (1 - u) * soft;
-          /* compression first (negative), then rebound through rest (positive) */
-          sq = -squashAmp * cell * Math.sin(Math.PI * squashBounce * u) *
-            Math.exp(-squashDecay * u) * soft;
+          /* compression is greatest at the moment of impact and dies away
+             through alternating squash and stretch */
+          comp = squashAmp * cell * Math.cos(squashBounce * Math.PI * 2 * u) *
+            Math.exp(-squashDecay * u);
+          ampl = waveAmp * cell * Math.exp(-waveDecay * u) * (1 - u);
         }
-        if (!ampl && !sq) {
+        if (!ampl && !comp) {
           drawTile(ctx, fl.type, tx, yy, cell, 1, 1);
         } else {
           var size = cell * 1.8, org = cell * 0.4;
@@ -338,14 +340,20 @@
           var k = warp.width / size;
           var sh = cell / strips;
           var floorY = yy + cell;
+          var cn = comp / cell;                       // compression, in tiles
+          var by = floorY;
           for (var s = strips - 1; s >= 0; s--) {
-            var st = (strips - 1 - s) / strips;     // 0 at the floor
-            var h = sh * (1 + sq / cell);            // vertical squash/stretch
-            var w = size * (1 - bulge * sq / cell);   // wider when squashed
-            var dx = ampl * Math.sin(Math.PI * st) *
-              Math.sin((st * waveWaves + u * waveTravel) * Math.PI * 2);
+            var v = (strips - s - 0.5) / strips;      // 0 at the floor, up to 1
+            var f = 1 - cn * (1 - v * heightTaper);   // the base squashes most
+            f = Math.max(0.15, Math.min(1.8, f));
+            var h = sh * f;
+            var spread = 1 - v * v;                   // bulge widest at the floor
+            var w = size * (1 + bulge * cn * spread);
+            var dx = ampl * Math.sin(Math.PI * v) *
+              Math.sin((v * waveWaves + u * waveTravel) * Math.PI * 2);
             ctx.drawImage(warp, 0, (org + s * sh) * k, warp.width, sh * k,
-              tx - org + dx - (w - size) / 2, floorY - (strips - s) * h, w, h);
+              tx - org + dx - (w - size) / 2, by - h, w, h);
+            by -= h;
           }
         }
         delete rest[fl.row + ":" + fl.col];
