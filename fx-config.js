@@ -9,14 +9,14 @@
     /* wave() — the soft wave a gem lands with (draw.js) */
     fall: {
       land: 0.82,          // fraction of the drop spent falling; the rest is the landing
-      amp: 0.09,           // peak sideways shift of a band, in tile widths
+      amp: 0.06,           // peak sideways shift of a band, in tile widths
       waves: 0.7,          // ripples that fit over the tile height
       travel: 0.6,         // wave cycles that roll up through the landing
-      decay: 1.1,          // how fast the wave dies out (higher = quicker)
-      squashAmp: 0.42,     // how flat the gem is squeezed on impact, in tile heights
-      squashBounce: 1.2,   // squash/stretch cycles before it settles (1 = one wobble)
-      squashDecay: 2.6,    // how fast the wobble damps (higher = quicker)
-      bulge: 0.35,         // extra width at the floor while squashed (volume feel)
+      decay: 1.4,          // how fast the wave dies out (higher = quicker)
+      squashAmp: 0.24,     // how flat the gem is squeezed on impact, in tile heights
+      squashBounce: 1.0,   // squash/stretch cycles before it settles (1 = one wobble)
+      squashDecay: 4.2,    // how fast the wobble damps (higher = quicker)
+      bulge: 0.16,         // extra width at the floor while squashed (volume feel)
       heightTaper: 0.7,    // how much the top resists squashing (0..1)
       strips: 10,          // horizontal bands the gem is drawn in
     },

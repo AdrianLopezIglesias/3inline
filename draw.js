@@ -300,14 +300,14 @@
     if (G.flight) {
       var FS = (window.FXConfig && window.FXConfig.fall) || {};
       var landAt = FS.land != null ? FS.land : 0.82;
-      var waveAmp = FS.amp != null ? FS.amp : 0.18;
-      var waveWaves = FS.waves != null ? FS.waves : 1.1;
-      var waveTravel = FS.travel != null ? FS.travel : 1.1;
-      var waveDecay = FS.decay != null ? FS.decay : 1.6;
-      var squashAmp = FS.squashAmp != null ? FS.squashAmp : 0.42;
-      var squashBounce = FS.squashBounce != null ? FS.squashBounce : 1.2;
-      var squashDecay = FS.squashDecay != null ? FS.squashDecay : 2.6;
-      var bulge = FS.bulge != null ? FS.bulge : 0.35;
+      var waveAmp = FS.amp != null ? FS.amp : 0.06;
+      var waveWaves = FS.waves != null ? FS.waves : 0.7;
+      var waveTravel = FS.travel != null ? FS.travel : 0.6;
+      var waveDecay = FS.decay != null ? FS.decay : 1.4;
+      var squashAmp = FS.squashAmp != null ? FS.squashAmp : 0.24;
+      var squashBounce = FS.squashBounce != null ? FS.squashBounce : 1.0;
+      var squashDecay = FS.squashDecay != null ? FS.squashDecay : 4.2;
+      var bulge = FS.bulge != null ? FS.bulge : 0.16;
       var heightTaper = FS.heightTaper != null ? FS.heightTaper : 0.7;
       var strips = FS.strips != null ? FS.strips : 10;
       for (i = 0; i < G.flight.length; i++) {
