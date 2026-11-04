@@ -45,15 +45,15 @@
       burst: {
         count: 280,
         speedMin: 140, speedMax: 620,
-        lifeMin: 0.36, lifeMax: 0.45, lifeGrow: 0.1,
-        sizeMin: 4.4, sizeMax: 11,
+        lifeMin: 0.45, lifeMax: 0.56, lifeGrow: 0.1,
+        sizeMin: 3.2, sizeMax: 8,
         gravity: 30, drag: 0.7, alphaMul: 1.9,
       },
       embers: {
         count: 150,
         speedMin: 60, speedMax: 180, spread: 30,
-        lifeMin: 0.34, lifeMax: 0.45, lifeGrow: 0.09,
-        sizeMin: 4, sizeMax: 8,
+        lifeMin: 0.43, lifeMax: 0.56, lifeGrow: 0.09,
+        sizeMin: 3, sizeMax: 6,
         rise: 60, drag: 0.5, alphaMul: 1.35,
       },
       rings: [
