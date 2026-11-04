@@ -44,21 +44,21 @@
     kick: {
       burst: {
         count: 280,
-        speedMin: 140, speedMax: 620,
+        speedMin: 80, speedMax: 340,
         lifeMin: 0.45, lifeMax: 0.56, lifeGrow: 0.1,
         sizeMin: 3.2, sizeMax: 8,
         gravity: 30, drag: 0.7, alphaMul: 1.9,
       },
       embers: {
         count: 150,
-        speedMin: 60, speedMax: 180, spread: 30,
+        speedMin: 35, speedMax: 100, spread: 30,
         lifeMin: 0.43, lifeMax: 0.56, lifeGrow: 0.09,
         sizeMin: 3, sizeMax: 6,
         rise: 60, drag: 0.5, alphaMul: 1.35,
       },
       rings: [
-        { rMax: 190, life: 0.3, lifeGrow: 0.06, col: "type" },
-        { rMax: 155, life: 0.36, lifeGrow: 0.06, col: [255, 255, 255] },
+        { rMax: 120, life: 0.3, lifeGrow: 0.06, col: "type" },
+        { rMax: 100, life: 0.36, lifeGrow: 0.06, col: [255, 255, 255] },
       ],
       power: { clear: 1.65, special: 1.9, blast: 2.8 },
     },
