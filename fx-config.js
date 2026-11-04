@@ -4,7 +4,7 @@
 (function () {
   window.FXConfig = {
     /* new tuning knobs */
-    gravitySpeed: 1,        // multiplier on particle gravity (bursts/embers)
+    gravitySpeed: 1.3,        // multiplier on particle gravity (bursts/embers)
 
     /* library hit widths, in tiles (used by fx.js LIB_LOOK) */
     libLook: { hitSpark: 2.6, cartoonPow: 3.4, smallExplosion: 6.2 },
