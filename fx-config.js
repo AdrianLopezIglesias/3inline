@@ -9,8 +9,8 @@
     /* fallTile() — the soft landing cushion on a gem that drops (draw.js) */
     fall: {
       land: 0.82,          // fraction of the drop spent falling; the rest is the landing
-      squash: 0.22,        // peak flatten, as a fraction of the tile height
-      decay: 2.6,          // how fast the cushion settles (higher = stiffer)
+      squash: 0.34,        // peak flatten, as a fraction of the tile height
+      decay: 2.1,          // how fast the cushion settles (higher = stiffer)
       cycles: 2,           // 2 = flatten, recover, one faint rebound, settle
     },
     /* library hit widths, in tiles (used by fx.js LIB_LOOK) */
