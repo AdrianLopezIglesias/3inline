@@ -284,10 +284,24 @@
       for (i = 0; i < G.flight.length; i++) {
         var fl = G.flight[i];
         var q = Math.min(1, (G.now() - fl.t0) / fl.dur);
-        var qq = q * q;
-        var yy = fl.y0 + (fl.y1 - fl.y0) * qq;
-        var dropScale = 1 + 0.08 * Math.sin(qq * Math.PI);
-        drawTile(ctx, fl.type, pxX(fl.col), yy, cell, dropScale, 1);
+        /* gravity: from rest to the floor in the first 82% of the fall */
+        var fall = Math.min(1, q / 0.82);
+        var yy = fl.y0 + (fl.y1 - fl.y0) * fall * fall;
+        /* then squash on the floor and rebound once */
+        var sy = 1, sx = 1;
+        if (q > 0.82) {
+          var u = (q - 0.82) / 0.18;
+          var squash = Math.exp(-4 * u) * Math.cos(u * Math.PI * 2) * 0.3;
+          sy = 1 - squash;
+          sx = 1 + squash * 0.7;
+        }
+        var fcx = pxX(fl.col) + cell / 2, fby = yy + cell;
+        ctx.save();
+        ctx.translate(fcx, fby);
+        ctx.scale(sx, sy);
+        ctx.translate(-fcx, -fby);
+        drawTile(ctx, fl.type, pxX(fl.col), yy, cell, 1, 1);
+        ctx.restore();
         delete rest[fl.row + ":" + fl.col];
       }
     }

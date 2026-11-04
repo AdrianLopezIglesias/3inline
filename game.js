@@ -401,7 +401,7 @@
       var f = flight[i];
       var y0 = f.fromR < 0 ? pxY(-1) : pxY(f.fromR);
       var y1 = pxY(f.toR);
-      var dur = DROP_MS + Math.random() * 80;
+      var dur = DROP_MS;
       G.flight.push({ type: f.type, col: f.col, row: f.toR, y0: y0, y1: y1, t0: now, dur: dur });
     }
     G.state = "drop";
