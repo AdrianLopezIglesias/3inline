@@ -313,9 +313,18 @@
   /*  The hand-rolled layer under a library hit: power 1 is an ordinary
       match, 3 a power move.  More, faster, bigger and longer the higher
       it goes, so every clear reads loud and keeps throwing debris. */
+  function withOver(base, over) {
+    var out = {}, key;
+    for (key in base) out[key] = base[key];
+    for (key in over || {}) out[key] = over[key];
+    return out;
+  }
+
   function kick(x, y, type, power) {
-    var k = CFG.kick, rampColors = TYPE_RAMPS[(type || 0) % 7];
-    var b = k.burst, e = k.embers, gs = CFG.gravitySpeed || 1;
+    var k = CFG.kick, t = (k.types && k.types[(type || 0) % 7]) || {};
+    var rampColors = TYPE_RAMPS[(type || 0) % 7];
+    var b = withOver(k.burst, t.burst), e = withOver(k.embers, t.embers);
+    var rings = t.rings || k.rings, gs = CFG.gravitySpeed || 1;
     FX.active.push(new Burst({
       x: x, y: y, count: Math.round(b.count * power),
       speedMin: b.speedMin * power, speedMax: b.speedMax * Math.sqrt(power),
@@ -331,10 +340,10 @@
       ramp: rampColors.slice().reverse(),
       rise: e.rise, drag: e.drag, alphaMul: e.alphaMul,
     }));
-    for (var i = 0; i < k.rings.length; i++) {
-      var rg = k.rings[i];
+    for (var i = 0; i < rings.length; i++) {
+      var rg = rings[i];
       var col = rg.col === "type" ? rampColors[1] : rg.col;
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: rg.rMax * power, life: rg.life + rg.lifeGrow * power, col: col }));
+      FX.active.push(new RingSnap({ x: x, y: y, rMax: rg.rMax * power, life: rg.life + (rg.lifeGrow || 0) * power, col: col }));
     }
   }
 

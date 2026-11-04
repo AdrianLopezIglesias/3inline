@@ -44,10 +44,10 @@
     kick: {
       burst: {
         count: 280,
-        speedMin: 80, speedMax: 340,
-        lifeMin: 0.45, lifeMax: 0.56, lifeGrow: 0.1,
-        sizeMin: 4.8, sizeMax: 12,
-        gravity: 30, drag: 0.7, alphaMul: 1.9,
+        speedMin: 50, speedMax: 340,
+        lifeMin: 0.45, lifeMax: 0.65, lifeGrow: 0.1,
+        sizeMin: 3, sizeMax: 6,
+        gravity: 10, drag: 0.7, alphaMul: 2.9,
       },
       embers: {
         count: 150,
@@ -61,6 +61,46 @@
         { rMax: 100, life: 0.36, lifeGrow: 0.06, col: [255, 255, 255] },
       ],
       power: { clear: 1.65, special: 1.9, blast: 2.8 },
+      /* Per-type burst overrides, one per gem type (0-6, same order as
+         typeRamps). Any field left out falls back to the shared burst,
+         embers and rings above, so retuning the base still moves all of
+         them. Each color gets its own shape of burst here. */
+      types: [
+        /* 0 ember (orange): fire — fast sparks, light gravity, swaying rise */
+        { burst: { speedMin: 70, speedMax: 380, gravity: 4, drag: 0.9, sizeMin: 2.5, sizeMax: 5, lifeMin: 0.4, lifeMax: 0.8 },
+          embers: { count: 220, speedMin: 20, speedMax: 90, rise: 120, sizeMin: 3, sizeMax: 7 },
+          rings: [{ rMax: 140, life: 0.34, lifeGrow: 0.06, col: "type" },
+                  { rMax: 60, life: 0.5, lifeGrow: 0.04, col: [255, 220, 160] }] },
+        /* 1 leaf (green): slow, heavy drag, settles down leaves would */
+        { burst: { count: 200, speedMin: 30, speedMax: 180, gravity: 26, drag: 1.6, sizeMin: 4, sizeMax: 9, lifeMin: 0.5, lifeMax: 0.9 },
+          embers: { count: 90, speedMin: 15, speedMax: 60, spread: 40, rise: 10, drag: 1.1, sizeMin: 5, sizeMax: 10 },
+          rings: [{ rMax: 110, life: 0.5, lifeGrow: 0.08, col: "type" }] },
+        /* 2 spark (yellow): many tiny fast sparks, short and tight */
+        { burst: { count: 320, speedMin: 110, speedMax: 520, gravity: 14, drag: 0.3, sizeMin: 2, sizeMax: 4, lifeMin: 0.28, lifeMax: 0.45 },
+          embers: { count: 80, speedMin: 60, speedMax: 160, sizeMin: 2.5, sizeMax: 5, rise: 30, drag: 0.2 },
+          rings: [{ rMax: 150, life: 0.22, lifeGrow: 0.03, col: "type" },
+                  { rMax: 90, life: 0.3, lifeGrow: 0.03, col: [255, 255, 210] }] },
+        /* 3 petal (pink): few large slow petals that float up and fade */
+        { burst: { count: 150, speedMin: 25, speedMax: 150, gravity: 2, drag: 1.4, sizeMin: 5, sizeMax: 11, lifeMin: 0.7, lifeMax: 1.2 },
+          embers: { count: 120, speedMin: 15, speedMax: 70, spread: 50, rise: 45, drag: 1.2, sizeMin: 4, sizeMax: 9 },
+          rings: [{ rMax: 130, life: 0.6, lifeGrow: 0.1, col: "type" },
+                  { rMax: 70, life: 0.8, lifeGrow: 0.1, col: [255, 235, 245] }] },
+        /* 4 arcane (purple): swirls — fast, light, heavy drag, wide ring */
+        { burst: { count: 240, speedMin: 60, speedMax: 300, gravity: 6, drag: 1.9, sizeMin: 3, sizeMax: 7, lifeMin: 0.6, lifeMax: 0.95 },
+          embers: { count: 160, speedMin: 40, speedMax: 130, spread: 60, rise: 70, drag: 1.5 },
+          rings: [{ rMax: 170, life: 0.55, lifeGrow: 0.08, col: "type" },
+                  { rMax: 120, life: 0.75, lifeGrow: 0.08, col: [230, 215, 255] }] },
+        /* 5 stone (grey): few heavy chunks that drop hard and die quickly */
+        { burst: { count: 140, speedMin: 40, speedMax: 240, gravity: 60, drag: 0.2, sizeMin: 5, sizeMax: 12, lifeMin: 0.25, lifeMax: 0.45 },
+          embers: { count: 60, speedMin: 20, speedMax: 70, spread: 26, sizeMin: 4, sizeMax: 8, rise: 0, drag: 0.3 },
+          rings: [{ rMax: 90, life: 0.28, lifeGrow: 0.05, col: "type" },
+                  { rMax: 60, life: 0.4, lifeGrow: 0.05, col: [235, 240, 248] }] },
+        /* 6 water (blue): a splash — dense fast droplets that rain down */
+        { burst: { count: 340, speedMin: 90, speedMax: 420, gravity: 40, drag: 1.1, sizeMin: 2.5, sizeMax: 6, lifeMin: 0.35, lifeMax: 0.6 },
+          embers: { count: 140, speedMin: 30, speedMax: 110, spread: 70, rise: -20, drag: 1.0 },
+          rings: [{ rMax: 140, life: 0.32, lifeGrow: 0.06, col: "type" },
+                  { rMax: 100, life: 0.44, lifeGrow: 0.06, col: [200, 230, 255] }] },
+      ],
     },
 
     /* cascadeFlash() — big refill burst */
