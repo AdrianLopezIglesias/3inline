@@ -198,32 +198,36 @@
 
     /* event-driven factories  */
     clearBurst: function (x, y, type) {
-      FX.lib("hitSpark", x, y, { seed: 4 + (type || 0) });
+      FX.lib("hitSpark", x, y, { seed: 4 + (type || 0), light: 1.8 });
+      kick(x, y, type, 1.15);
     },
 
     specialClear: function (x, y, type) {
-      FX.lib("cartoonPow", x, y, { seed: 5 + (type || 0) });
+      FX.lib("cartoonPow", x, y, { seed: 5 + (type || 0), light: 2.2 });
+      kick(x, y, type, 1.9);
     },
 
     cascadeFlash: function (x, y) {
       FX.active.push(new Burst({
-        x: x, y: y, count: 180, speedMin: 110, speedMax: 400,
-        lifeMin: 0.4, lifeMax: 1.0, sizeMin: 4, sizeMax: 11,
+        x: x, y: y, count: 300, speedMin: 130, speedMax: 560,
+        lifeMin: 0.5, lifeMax: 1.3, sizeMin: 5, sizeMax: 15,
         ramp: [[255, 255, 220], [255, 240, 120], [255, 200, 80], [255, 160, 40], [200, 100, 20]],
-        gravity: 20, drag: 0.5, alphaMul: 1.6,
+        gravity: 24, drag: 0.4, alphaMul: 2.0,
       }));
       FX.active.push(new Embers({
-        x: x, y: y, count: 85, speedMin: 30, speedMax: 90, spread: 30,
-        lifeMin: 0.55, lifeMax: 1.2, sizeMin: 2.5, sizeMax: 6.5,
+        x: x, y: y, count: 150, speedMin: 35, speedMax: 120, spread: 46,
+        lifeMin: 0.7, lifeMax: 1.6, sizeMin: 3, sizeMax: 9,
         ramp: [[255, 255, 220], [255, 230, 120], [255, 190, 80], [220, 130, 40], [120, 60, 20]],
-        rise: 45, drag: 0.5, alphaMul: 1.1,
+        rise: 60, drag: 0.4, alphaMul: 1.4,
       }));
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: 115, life: 0.45, col: [255, 230, 100] }));
-      FX.active.push(new RingSnap({ x: x, y: y, rMax: 75, life: 0.6, col: [255, 255, 255] }));
+      FX.active.push(new RingSnap({ x: x, y: y, rMax: 190, life: 0.5, col: [255, 230, 100] }));
+      FX.active.push(new RingSnap({ x: x, y: y, rMax: 130, life: 0.7, col: [255, 255, 255] }));
+      FX.active.push(new RingSnap({ x: x, y: y, rMax: 70, life: 0.85, col: [255, 200, 120] }));
     },
 
     powerBlast: function (x, y, type) {
-      FX.lib("smallExplosion", x, y, { seed: 7 + (type || 0) });
+      FX.lib("smallExplosion", x, y, { seed: 7 + (type || 0), light: 2.4 });
+      kick(x, y, type, 2.8);
     },
 
     /* frame hooks */
@@ -249,7 +253,7 @@
       game canvas with smoothing off, its origin on the tile.  LIB_LOOK
       is how wide each effect should read, in tiles. */
 
-  var LIB_LOOK = { hitSpark: 1.6, cartoonPow: 2.2, smallExplosion: 4.2 };
+  var LIB_LOOK = { hitSpark: 2.6, cartoonPow: 3.4, smallExplosion: 6.2 };
   var libScratch = {};
 
   function libScratchFor(w, h, ox, oy) {
@@ -303,6 +307,30 @@
     if (!window.PixelFXLIB || !window.PixelFXLIB.effects[name]) return;
     FX.active.push(new LibHit(name, x, y, opts));
   };
+
+  /*  The hand-rolled layer under a library hit: power 1 is an ordinary
+      match, 3 a power move.  More, faster, bigger and longer the higher
+      it goes, so every clear reads loud and keeps throwing debris. */
+  function kick(x, y, type, power) {
+    var rampColors = TYPE_RAMPS[(type || 0) % 7];
+    FX.active.push(new Burst({
+      x: x, y: y, count: Math.round(170 * power),
+      speedMin: 90 * power, speedMax: 380 * Math.sqrt(power),
+      lifeMin: 0.5, lifeMax: 1.1 * power,
+      sizeMin: 4 * power, sizeMax: 12 * power,
+      ramp: rampColors, gravity: 30, drag: 0.45, alphaMul: 1.9,
+    }));
+    FX.active.push(new Embers({
+      x: x, y: y, count: Math.round(90 * power),
+      speedMin: 30, speedMax: 100, spread: 30 * power,
+      lifeMin: 0.7, lifeMax: 1.5 * power,
+      sizeMin: 3, sizeMax: 8 * power,
+      ramp: rampColors.slice().reverse(),
+      rise: 60, drag: 0.4, alphaMul: 1.35,
+    }));
+    FX.active.push(new RingSnap({ x: x, y: y, rMax: 115 * power, life: 0.5 + 0.12 * power, col: rampColors[1] }));
+    FX.active.push(new RingSnap({ x: x, y: y, rMax: 82 * power, life: 0.62 + 0.12 * power, col: [255, 255, 255] }));
+  }
 
   window.PixelFX = FX;
 })();
