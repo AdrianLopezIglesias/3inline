@@ -49,7 +49,7 @@ collapse/refill ordering.
 - `game.js` — board model, pure rules, and the game state machine.
 - `draw.js` — canvas rendering (tiles, swap/clear/drop animation, selection ring).
 - `fx.js` — board effects: hand-rolled cascade/ring bursts plus the vendored pixelfx hits, blitted from pixel frames.
-- `fx-config.js` — effect tuning in one place (kick/cascade specs, library widths, `gravitySpeed`, `gemsBounce`); loaded before `fx.js` and `draw.js`, which read it.
+- `fx-config.js` — effect tuning in one place (kick/cascade specs, library widths, `gravitySpeed`); loaded before `fx.js` and `draw.js`, which read it.
 - `pixelfx-vendor.js` — the pixelfx engine and three of its effects generated into one classic script (`window.PixelFXLIB`); regenerate, do not hand-edit.
 - `main.js` — pointer/tap input and DOM wiring.
 

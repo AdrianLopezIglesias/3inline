@@ -284,7 +284,7 @@
       for (i = 0; i < G.flight.length; i++) {
         var fl = G.flight[i];
         var q = Math.min(1, (G.now() - fl.t0) / fl.dur);
-        var qq = q + (easeOutBounce(q) - q) * ((window.FXConfig && window.FXConfig.gemsBounce) || 0);
+        var qq = q * q;
         var yy = fl.y0 + (fl.y1 - fl.y0) * qq;
         var dropScale = 1 + 0.08 * Math.sin(qq * Math.PI);
         drawTile(ctx, fl.type, pxX(fl.col), yy, cell, dropScale, 1);
@@ -322,13 +322,6 @@
   }
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
-  }
-  function easeOutBounce(t) {
-    var n1 = 7.5625, d1 = 2.75;
-    if (t < 1 / d1) return n1 * t * t;
-    else if (t < 2 / d1) return n1 * (t -= 1.5 / d1) * t + 0.75;
-    else if (t < 2.5 / d1) return n1 * (t -= 2.25 / d1) * t + 0.9375;
-    else return n1 * (t -= 2.625 / d1) * t + 0.984375;
   }
   function pxX(c) { return window.Game.geom.left + c * window.Game.geom.cell; }
   function pxY(r) { return window.Game.geom.top + r * window.Game.geom.cell; }

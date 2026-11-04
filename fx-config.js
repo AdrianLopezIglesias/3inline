@@ -5,7 +5,6 @@
   window.FXConfig = {
     /* new tuning knobs */
     gravitySpeed: 1,        // multiplier on particle gravity (bursts/embers)
-    gemsBounce: 1,          // 0..1 strength of the drop/flight bounce in draw.js
 
     /* library hit widths, in tiles (used by fx.js LIB_LOOK) */
     libLook: { hitSpark: 2.6, cartoonPow: 3.4, smallExplosion: 6.2 },
@@ -42,10 +41,10 @@
         rise: 60, drag: 0.9, alphaMul: 1.35,
       },
       rings: [
-        { rMax: 150, life: 0.3, lifeGrow: 0.06, col: "type" },
-        { rMax: 105, life: 0.36, lifeGrow: 0.06, col: [255, 255, 255] },
+        { rMax: 190, life: 0.3, lifeGrow: 0.06, col: "type" },
+        { rMax: 155, life: 0.36, lifeGrow: 0.06, col: [255, 255, 255] },
       ],
-      power: { clear: 1.15, special: 1.9, blast: 2.8 },
+      power: { clear: 1.65, special: 1.9, blast: 2.8 },
     },
 
     /* cascadeFlash() — big refill burst */
