@@ -26,6 +26,9 @@
     libLight: { hitSpark: 1.8, cartoonPow: 2.2, smallExplosion: 2.4 },
     /* library explosion playback length (1.3 = 30% longer than authored) */
     libDuration: 1.3,
+    /* library effect per gem type (in the same order as typeRamps);
+       falls back to each event's default when a type is not listed */
+    typeLib: ["hitSpark", "cartoonPow", "hitSpark", "cartoonPow", "smallExplosion", "smallExplosion", "hitSpark"],
 
     /* particle color ramps per gem type (matched to tile colors in draw.js) */
     typeRamps: [

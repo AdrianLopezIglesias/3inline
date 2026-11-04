@@ -194,17 +194,24 @@
     [[222, 232, 246], [130, 145, 170], [63, 71, 86], [32, 37, 47], [10, 12, 16]],
     [[205, 232, 255], [80, 160, 250], [26, 111, 212], [8, 56, 130], [2, 18, 44]],
   ];
+  /* library effect per gem type; falls back to the event's default */
+  function typeLib(type, fallback) {
+    var list = CFG.typeLib;
+    return (list && list[(type || 0) % list.length]) || fallback;
+  }
   var FX = {
     active: [],
 
     /* event-driven factories  */
     clearBurst: function (x, y, type) {
-      FX.lib("hitSpark", x, y, { seed: 4 + (type || 0), light: CFG.libLight.hitSpark });
+      var lib = typeLib(type, "hitSpark");
+      FX.lib(lib, x, y, { seed: 4 + (type || 0), light: CFG.libLight[lib] });
       kick(x, y, type, CFG.kick.power.clear);
     },
 
     specialClear: function (x, y, type) {
-      FX.lib("cartoonPow", x, y, { seed: 5 + (type || 0), light: CFG.libLight.cartoonPow });
+      var lib = typeLib(type, "cartoonPow");
+      FX.lib(lib, x, y, { seed: 5 + (type || 0), light: CFG.libLight[lib] });
       kick(x, y, type, CFG.kick.power.special);
     },
 
@@ -227,7 +234,8 @@
     },
 
     powerBlast: function (x, y, type) {
-      FX.lib("smallExplosion", x, y, { seed: 7 + (type || 0), light: CFG.libLight.smallExplosion });
+      var lib = typeLib(type, "smallExplosion");
+      FX.lib(lib, x, y, { seed: 7 + (type || 0), light: CFG.libLight[lib] });
       kick(x, y, type, CFG.kick.power.blast);
     },
 
