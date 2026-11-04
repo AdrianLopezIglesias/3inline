@@ -93,7 +93,7 @@
     var mx = e.clientX - rect.left, my = e.clientY - rect.top;
     var offx = mx - hx, offy = my - hy;
     var len = Math.sqrt(offx * offx + offy * offy);
-    var maxD = g.cell * 0.42;
+    var maxD = g.cell * 0.6;
     if (len > maxD) { offx *= maxD / len; offy *= maxD / len; }
     window.Game.dragDisp = { x: offx, y: offy };
     var cell = ptrToCell(e);
