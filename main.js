@@ -76,7 +76,8 @@
     e.preventDefault();
     var cell = ptrToCell(e);
     if (!cell) return;
-    drag = { start: cell, x: e.clientX, y: e.clientY, moved: false };
+    drag = { start: cell, cell: cell, x: e.clientX, y: e.clientY, moved: false };
+    window.Game.hover = cell;
     try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
   });
 
@@ -84,12 +85,17 @@
     if (!drag) return;
     var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (dx * dx + dy * dy > 64) drag.moved = true;
+    var cell = ptrToCell(e);
+    if (!cell) return;
+    drag.cell = cell;
+    window.Game.hover = cell;
   });
 
   canvas.addEventListener("pointerup", function (e) {
     if (!drag) return;
     var d = drag;
     drag = null;
+    window.Game.hover = null;
     var end = ptrToCell(e);
     if (!end) return;
     if (!d.moved || (end[0] === d.start[0] && end[1] === d.start[1])) {
@@ -103,7 +109,7 @@
     }
   });
 
-  canvas.addEventListener("pointercancel", function () { drag = null; });
+  canvas.addEventListener("pointercancel", function () { drag = null; window.Game.hover = null; });
 
   canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 

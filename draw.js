@@ -379,6 +379,15 @@
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
+    if (G.hover) {
+      var hovPulse = Math.sin(performance.now() / 120);
+      ctx.strokeStyle = "#ffe9a8";
+      ctx.lineWidth = Math.max(2.5, cell * 0.06);
+      ctx.globalAlpha = 0.5 + 0.4 * hovPulse;
+      rr(ctx, L + G.hover[1] * cell + 1, T + G.hover[0] * cell + 1, cell - 2, cell - 2, cell * 0.18);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
     if (window.PixelFX && PixelFX.active && window.Game && window.Game.state !== "ended") {
       window.PixelFX.draw(ctx);
     }
