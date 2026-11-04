@@ -363,7 +363,8 @@
     for (key in rest) {
       var parts = key.split(":");
       r = +parts[0]; c = +parts[1];
-      drawTile(ctx, rest[key], pxX(c), pxY(r), cell, 1, 1);
+      var disp = (G.dragDisp && G.hover && r === G.hover[0] && c === G.hover[1]) ? G.dragDisp : null;
+      drawTile(ctx, rest[key], pxX(c) + (disp ? disp.x : 0), pxY(r) + (disp ? disp.y : 0), cell, 1, 1);
     }
 
     if (G.sel) {

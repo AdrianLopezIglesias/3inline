@@ -77,7 +77,8 @@
     var cell = ptrToCell(e);
     if (!cell) return;
     drag = { start: cell, cell: cell, x: e.clientX, y: e.clientY, moved: false };
-    window.Game.hover = cell;
+    window.Game.hover = [cell[1], cell[0]];
+    window.Game.dragDisp = { x: 0, y: 0 };
     try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
   });
 
@@ -85,10 +86,20 @@
     if (!drag) return;
     var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (dx * dx + dy * dy > 64) drag.moved = true;
+    var g = window.Game.geom;
+    var hx = g.left + drag.start[0] * g.cell + g.cell / 2;
+    var hy = g.top + drag.start[1] * g.cell + g.cell / 2;
+    var rect = canvas.getBoundingClientRect();
+    var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    var offx = mx - hx, offy = my - hy;
+    var len = Math.sqrt(offx * offx + offy * offy);
+    var maxD = g.cell * 0.42;
+    if (len > maxD) { offx *= maxD / len; offy *= maxD / len; }
+    window.Game.dragDisp = { x: offx, y: offy };
     var cell = ptrToCell(e);
     if (!cell) return;
     drag.cell = cell;
-    window.Game.hover = cell;
+    window.Game.hover = [cell[1], cell[0]];
   });
 
   canvas.addEventListener("pointerup", function (e) {
@@ -96,6 +107,7 @@
     var d = drag;
     drag = null;
     window.Game.hover = null;
+    window.Game.dragDisp = null;
     var end = ptrToCell(e);
     if (!end) return;
     if (!d.moved || (end[0] === d.start[0] && end[1] === d.start[1])) {
@@ -109,7 +121,7 @@
     }
   });
 
-  canvas.addEventListener("pointercancel", function () { drag = null; window.Game.hover = null; });
+  canvas.addEventListener("pointercancel", function () { drag = null; window.Game.hover = null; window.Game.dragDisp = null; });
 
   canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 
