@@ -255,6 +255,7 @@
       is how wide each effect should read, in tiles. */
 
   var LIB_LOOK = CFG.libLook;
+  var LIB_TIME = CFG.libDuration || 1;   // >1 makes a library explosion play longer
   var libScratch = {};
 
   function libScratchFor(w, h, ox, oy) {
@@ -289,7 +290,7 @@
     this.done = false;
   }
   LibHit.prototype.update = function (dt) {
-    this.fx.update(dt);
+    this.fx.update(dt / LIB_TIME);
     if (this.fx.done()) this.done = true;
   };
   LibHit.prototype.draw = function (ctx) {
