@@ -304,6 +304,10 @@
       var waveWaves = FS.waves != null ? FS.waves : 1.1;
       var waveTravel = FS.travel != null ? FS.travel : 1.1;
       var waveDecay = FS.decay != null ? FS.decay : 1.6;
+      var squashAmp = FS.squashAmp != null ? FS.squashAmp : 0.16;
+      var squashBounce = FS.squashBounce != null ? FS.squashBounce : 1.7;
+      var squashDecay = FS.squashDecay != null ? FS.squashDecay : 1.8;
+      var bulge = FS.bulge != null ? FS.bulge : 0.22;
       var strips = FS.strips != null ? FS.strips : 6;
       for (i = 0; i < G.flight.length; i++) {
         var fl = G.flight[i];
@@ -312,15 +316,20 @@
         var fall = Math.min(1, q / landAt);
         var yy = fl.y0 + (fl.y1 - fl.y0) * fall * fall;
         var tx = pxX(fl.col);
-        /* then a soft wave rolling up through the gem: drawn once into a
-           buffer, then blitted back in bands that shift side to side, so the
-           body ripples while its floor edge stays put */
-        var ampl = 0, u = 0;
+        /* soft-body landing: the gem squashes against the floor (shorter,
+           wider) and springs back with a damped wobble (taller, thinner),
+           while the lateral wave ripples as the secondary wobble. Bands are
+           bottom-locked so the footprint stays put. */
+        var ampl = 0, u = 0, sq = 0;
         if (q > landAt) {
           u = (q - landAt) / (1 - landAt);
-          ampl = waveAmp * cell * Math.exp(-waveDecay * u) * (1 - u) * Math.min(1, u * 12);
+          var soft = Math.min(1, u * 12);
+          ampl = waveAmp * cell * Math.exp(-waveDecay * u) * (1 - u) * soft;
+          /* compression first (negative), then rebound through rest (positive) */
+          sq = -squashAmp * cell * Math.sin(Math.PI * squashBounce * u) *
+            Math.exp(-squashDecay * u) * soft;
         }
-        if (!ampl) {
+        if (!ampl && !sq) {
           drawTile(ctx, fl.type, tx, yy, cell, 1, 1);
         } else {
           var size = cell * 1.8, org = cell * 0.4;
@@ -328,12 +337,15 @@
           drawTile(wc, fl.type, org, org, cell, 1, 1);
           var k = warp.width / size;
           var sh = cell / strips;
-          for (var s = 0; s < strips; s++) {
-            var yn = (s + 0.5) / strips;
-            var dx = ampl * Math.sin(Math.PI * yn) *
-              Math.sin((yn * waveWaves + u * waveTravel) * Math.PI * 2);
+          var floorY = yy + cell;
+          for (var s = strips - 1; s >= 0; s--) {
+            var st = (strips - 1 - s) / strips;     // 0 at the floor
+            var h = sh * (1 + sq / cell);            // vertical squash/stretch
+            var w = size * (1 - bulge * sq / cell);   // wider when squashed
+            var dx = ampl * Math.sin(Math.PI * st) *
+              Math.sin((st * waveWaves + u * waveTravel) * Math.PI * 2);
             ctx.drawImage(warp, 0, (org + s * sh) * k, warp.width, sh * k,
-              tx - org + dx, yy + s * sh, size, sh);
+              tx - org + dx - (w - size) / 2, floorY - (strips - s) * h, w, h);
           }
         }
         delete rest[fl.row + ":" + fl.col];

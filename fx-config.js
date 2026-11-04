@@ -13,6 +13,10 @@
       waves: 0.7,          // ripples that fit over the tile height
       travel: 0.6,         // wave cycles that roll up through the landing
       decay: 1.1,          // how fast the wave dies out (higher = quicker)
+      squashAmp: 0.16,     // peak vertical squash, as a fraction of tile height
+      squashBounce: 1.7,   // half-cycles of spring-back before it settles
+      squashDecay: 1.8,    // how fast the spring-back damps (higher = quicker)
+      bulge: 0.22,         // extra width while squashed (volume feel)
       strips: 6,           // horizontal bands the gem is drawn in
     },
     /* library hit widths, in tiles (used by fx.js LIB_LOOK) */
