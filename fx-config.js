@@ -6,14 +6,14 @@
     /* new tuning knobs */
     gravitySpeed: 1,        // multiplier on particle gravity (bursts/embers)
 
-    /* fallTile() — the soft landing cushion on a gem that drops (draw.js) */
+    /* wave() — the soft wave a gem lands with (draw.js) */
     fall: {
-      land: 0.82,          // fraction of the drop spent falling; the rest is the landing
-      squash: 0.5,         // wobble amplitude; the visible flatten peaks near 0.7 of this
-      bulge: 0.75,         // sideways widening per unit of flatten (jelly spread)
-      decay: 1.8,          // how fast the wobble settles (higher = stiffer)
-      cycles: 3,           // wobble cycles across the landing
-      lean: 0.1,           // sideways shear at peak wobble, in tile heights
+      land: 0.82,          // fraction of the drop spent falling; the rest is the wave
+      amp: 0.18,           // peak sideways shift of a band, in tile widths
+      waves: 1.1,          // ripples that fit over the tile height
+      travel: 1.1,         // wave cycles that roll up through the landing
+      decay: 1.6,          // how fast the wave dies out (higher = quicker)
+      strips: 6,           // horizontal bands the gem is drawn in
     },
     /* library hit widths, in tiles (used by fx.js LIB_LOOK) */
     libLook: { hitSpark: 2.6, cartoonPow: 3.4, smallExplosion: 6.2 },

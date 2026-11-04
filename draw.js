@@ -4,6 +4,23 @@
   var INK = "#fff6e6";
   var EDGE = "rgba(8,10,16,.55)";
 
+  /* one reused buffer: a landing gem is drawn into it once, then blitted back
+     in bands so the soft wave can shift them (see G.flight in render) */
+  var warp = null;
+  function warpBuf(size) {
+    var dpr = window.devicePixelRatio || 1;
+    var px = Math.ceil(size * dpr);
+    if (!warp) warp = document.createElement("canvas");
+    if (warp.width !== px) {
+      warp.width = px;
+      warp.height = px;
+    }
+    var wc = warp.getContext("2d");
+    wc.setTransform(dpr, 0, 0, dpr, 0, 0);
+    wc.clearRect(0, 0, size, size);
+    return wc;
+  }
+
   function rr(ctx, x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -283,35 +300,42 @@
     if (G.flight) {
       var FS = (window.FXConfig && window.FXConfig.fall) || {};
       var landAt = FS.land != null ? FS.land : 0.82;
-      var squashAmp = FS.squash != null ? FS.squash : 0.5;
-      var bulge = FS.bulge != null ? FS.bulge : 0.75;
-      var squashDecay = FS.decay != null ? FS.decay : 1.8;
-      var squashCycles = FS.cycles != null ? FS.cycles : 3;
-      var leanAmp = FS.lean != null ? FS.lean : 0.1;
+      var waveAmp = FS.amp != null ? FS.amp : 0.18;
+      var waveWaves = FS.waves != null ? FS.waves : 1.1;
+      var waveTravel = FS.travel != null ? FS.travel : 1.1;
+      var waveDecay = FS.decay != null ? FS.decay : 1.6;
+      var strips = FS.strips != null ? FS.strips : 6;
       for (i = 0; i < G.flight.length; i++) {
         var fl = G.flight[i];
         var q = Math.min(1, (G.now() - fl.t0) / fl.dur);
         /* gravity: from rest to the floor in the first part of the drop */
         var fall = Math.min(1, q / landAt);
         var yy = fl.y0 + (fl.y1 - fl.y0) * fall * fall;
-        /* then jelly: flatten wide, slosh through a few damped wobbles, settle */
-        var sy = 1, sx = 1, lean = 0;
+        var tx = pxX(fl.col);
+        /* then a soft wave rolling up through the gem: drawn once into a
+           buffer, then blitted back in bands that shift side to side, so the
+           body ripples while its floor edge stays put */
+        var ampl = 0, u = 0;
         if (q > landAt) {
-          var u = (q - landAt) / (1 - landAt);
-          var wob = Math.sin(Math.PI * squashCycles * u) * Math.exp(-squashDecay * u);
-          var squash = squashAmp * wob;
-          sy = 1 - squash;
-          sx = 1 + squash * bulge;
-          lean = leanAmp * wob;
+          u = (q - landAt) / (1 - landAt);
+          ampl = waveAmp * cell * Math.exp(-waveDecay * u) * (1 - u) * Math.min(1, u * 12);
         }
-        var fcx = pxX(fl.col) + cell / 2, fby = yy + cell;
-        ctx.save();
-        ctx.translate(fcx, fby);
-        ctx.scale(sx, sy);
-        if (lean) ctx.transform(1, 0, lean, 1, 0, 0);
-        ctx.translate(-fcx, -fby);
-        drawTile(ctx, fl.type, pxX(fl.col), yy, cell, 1, 1);
-        ctx.restore();
+        if (!ampl) {
+          drawTile(ctx, fl.type, tx, yy, cell, 1, 1);
+        } else {
+          var size = cell * 1.8, org = cell * 0.4;
+          var wc = warpBuf(size);
+          drawTile(wc, fl.type, org, org, cell, 1, 1);
+          var k = warp.width / size;
+          var sh = cell / strips;
+          for (var s = 0; s < strips; s++) {
+            var yn = (s + 0.5) / strips;
+            var dx = ampl * Math.sin(Math.PI * yn) *
+              Math.sin((yn * waveWaves + u * waveTravel) * Math.PI * 2);
+            ctx.drawImage(warp, 0, (org + s * sh) * k, warp.width, sh * k,
+              tx - org + dx, yy + s * sh, size, sh);
+          }
+        }
         delete rest[fl.row + ":" + fl.col];
       }
     }
