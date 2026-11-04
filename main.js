@@ -51,12 +51,59 @@
     return [c, r];
   }
 
+  var drag = null;
+
+  function isAdjacent(a, b) {
+    return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) === 1;
+  }
+
+  function dragSwap(start, end) {
+    var g = window.Game;
+    if (g.state !== "idle" && g.state !== "selected") return;
+    if (g.sel) {
+      var sr = g.sel[0], sc = g.sel[1];
+      if (sr !== start[1] || sc !== start[0]) {
+        g.tap(sc, sr);
+        g.tap(start[0], start[1]);
+      }
+    } else {
+      g.tap(start[0], start[1]);
+    }
+    g.tap(end[0], end[1]);
+  }
+
   canvas.addEventListener("pointerdown", function (e) {
     e.preventDefault();
     var cell = ptrToCell(e);
     if (!cell) return;
-    window.Game.tap(cell[0], cell[1]);
+    drag = { start: cell, x: e.clientX, y: e.clientY, moved: false };
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
   });
+
+  canvas.addEventListener("pointermove", function (e) {
+    if (!drag) return;
+    var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (dx * dx + dy * dy > 64) drag.moved = true;
+  });
+
+  canvas.addEventListener("pointerup", function (e) {
+    if (!drag) return;
+    var d = drag;
+    drag = null;
+    var end = ptrToCell(e);
+    if (!end) return;
+    if (!d.moved || (end[0] === d.start[0] && end[1] === d.start[1])) {
+      window.Game.tap(end[0], end[1]);
+      return;
+    }
+    if (isAdjacent(d.start, end)) {
+      dragSwap(d.start, end);
+    } else {
+      window.Game.tap(end[0], end[1]);
+    }
+  });
+
+  canvas.addEventListener("pointercancel", function () { drag = null; });
 
   canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 
